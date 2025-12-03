@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import InputScreen from './screens/InputScreen';
 import OutputScreen from './screens/OutputScreen';
+import HistoryScreen from './screens/HistoryScreen'; // <-- Yeni Import
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,12 @@ export default function App() {
         <Stack.Screen
           name="Output"
           component={OutputScreen}
+          options={{ headerShown: false }}
+        />
+        {/* Yeni Ekran Eklendi */}
+        <Stack.Screen
+          name="History"
+          component={HistoryScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

@@ -21,18 +21,15 @@ import {
     doc, 
     onSnapshot, 
     serverTimestamp,
-    query, 
-    where, 
-    getDocs, 
 } from 'firebase/firestore'; 
 
 import { db, auth, initialAuthToken, appId } from '../utils/firebase'; 
 // --- FIREBASE IMPORTS SONU ---
 
-// TypeScript için navigasyon tipi tanımlaması ve Durum Enum'u
 type RootStackParamList = {
   Input: undefined;
   Output: { jobId: string }; 
+  History: undefined;
 };
 
 type GenerationStatus = 'idle' | 'processing' | 'done' | 'failed';
@@ -88,14 +85,14 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onR
   if (isProcessing) {
     title = 'Creating Your Design...';
     subtitle = 'Ready in 2 minutes';
-    icon = <ActivityIndicator size="large" color="#fff" />;
-    color = '#1c1c1e';
+    icon = <ActivityIndicator size="large" color="#fff" />; 
+    color = '#1c1c1e'; 
     iconBgColor = 'transparent';
   } else if (isDone) {
     title = 'Your Design is Ready';
     subtitle = 'Tap to see it.';
     icon = <View style={styles.thumbnailBox}><Text style={styles.thumbnailText}>HEXA</Text></View>; 
-    color = '#943dff';
+    color = '#943dff'; 
     iconBgColor = '#fafafa';
   } else if (isFailed) {
     title = 'Oops, something went wrong!';
@@ -138,8 +135,8 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onR
 
 const InputScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const isFocused = useIsFocused();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const isFocused = useIsFocused(); 
+  const scrollViewRef = useRef<ScrollView>(null); 
   
   // State Yönetimi
   const [user, setUser] = useState<User | null>(null);
@@ -173,11 +170,10 @@ const InputScreen: React.FC = () => {
     return () => unsubscribe();
   }, []);
   
-  // 2. İşlem Durumunu Sıfırlama (OutputScreen'den geri dönüldüğünde)
+  // 2. İşlem Durumunu Sıfırlama
   useEffect(() => {
-      // Eğer ekran odaklanırsa (OutputScreen'den geri dönüldü) ve işlem tamamlanmışsa
       if (isFocused && (jobStatus === 'done' || jobStatus === 'failed')) {
-          handleResetState(); // Durumu resetle
+          handleResetState(); 
       }
   }, [isFocused]);
 
@@ -199,7 +195,6 @@ const InputScreen: React.FC = () => {
             setJobStatus(newStatus);
             console.log("Firestore Status Update:", newStatus); 
             
-            // İşlem bittiğinde (done/failed), dinleyiciyi sonlandırabiliriz.
             if (newStatus === 'done' || newStatus === 'failed') {
                 if (jobUnsubscribe) {
                     jobUnsubscribe();
@@ -238,7 +233,7 @@ const InputScreen: React.FC = () => {
         console.error("Create blocked: Status is processing or user is null.");
         return; 
     }
-
+    
     setJobStatus('processing'); 
     
     try {
@@ -251,13 +246,13 @@ const InputScreen: React.FC = () => {
             logoUrl: '',
         });
         
-        // Yeni ID geldiğinde state güncellenir ve listener yeni belgeye geçer
         setCurrentJobId(newJobRef.id);
         console.log(`İşlem başlatıldı. Job ID: ${newJobRef.id}. Firestore Yazma Başarılı.`);
 
     } catch (error) {
         console.error("--- KRİTİK HATA: Firestore'a Yazma Başarısız ---", error);
         setJobStatus('failed');
+        setCurrentJobId(null);
     }
   };
   
@@ -266,7 +261,7 @@ const InputScreen: React.FC = () => {
   };
 
   const handleRetry = () => {
-    // Resetlemeden direkt başlat. Böylece StatusDisplay ekranda kalır, sadece içeriği 'Loading'e döner.
+    // Resetlemeden direkt başlat.
     handleCreateLogo();
   };
 
@@ -279,33 +274,9 @@ const InputScreen: React.FC = () => {
     setSelectedStyleId(id);
   };
   
-  const handleViewHistory = async () => {
-      if (!user) {
-          console.warn("User not authenticated yet.");
-          return;
-      }
-      const userId = user.uid;
-      const jobsRef = collection(db, `artifacts/${appId}/users/${userId}/jobs`);
-      const q = query(jobsRef, where("status", "in", ["done", "failed"]));
-      
-      try {
-          const querySnapshot = await getDocs(q);
-          const history = querySnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data()
-          }));
-          
-          console.log(`--- Tarihçe (History) Sorgu Sonucu ---`);
-          console.log(`Bulunan ${history.length} adet tamamlanmış iş.`);
-          if (history.length > 0) {
-              console.table(history);
-          } else {
-              console.log("Henüz tamamlanmış veya başarısız iş bulunamadı.");
-          }
-      } catch (e) {
-          console.error("History çekilirken hata oluştu:", e);
-      }
-  }
+  const handleViewHistory = () => {
+      navigation.navigate('History');
+  };
   
   const isStatusActive = jobStatus !== 'idle';
   const showStatusDisplay = isStatusActive && currentJobId; 

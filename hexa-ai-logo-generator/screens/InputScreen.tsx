@@ -36,12 +36,12 @@ type GenerationStatus = 'idle' | 'processing' | 'done' | 'failed';
 
 // --- MOCK VERİLER ve Bileşenler ---
 const LOGO_STYLES = [
-  { id: 'none', name: 'No Style', icon: '🚫', name: 'No Style' },
-  { id: 'monogram', name: 'Monogram', icon: '🔠', name: 'Monogram' },
-  { id: 'abstract', name: 'Abstract', icon: '🌌', name: 'Abstract' },
-  { id: 'mascot', name: 'Mascot', icon: '🐉', name: 'Mascot' },
-  { id: 'minimal', name: 'Minimal', icon: '🔳', name: 'Minimal' },
-  { id: 'vintage', name: 'Vintage', icon: '📜', name: 'Vintage' },
+  { id: 'none', name: 'No Style', icon: '🚫'},
+  { id: 'monogram', name: 'Monogram', icon: '🔠'},
+  { id: 'abstract', name: 'Abstract', icon: '🌌'},
+  { id: 'mascot', name: 'Mascot', icon: '🐉'},
+  { id: 'minimal', name: 'Minimal', icon: '🔳'},
+  { id: 'vintage', name: 'Vintage', icon: '📜'},
 ];
 
 interface StyleChipProps {

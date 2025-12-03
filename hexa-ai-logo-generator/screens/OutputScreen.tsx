@@ -12,94 +12,133 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, RouteProp, useRoute, NavigationProp } from '@react-navigation/native';
 
+// --- FIREBASE IMPORTS ---
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { doc, onSnapshot } from 'firebase/firestore'; 
+
+import { app, db, auth, appId } from '../utils/firebase'; // <-- Yeni modülden import
+// --- FIREBASE IMPORTS ---
+
 // TypeScript için navigasyon tipleri
 type RootStackParamList = {
   Input: undefined;
-  Output: { jobId: string }; // SADECE jobId parametresini bekliyor
+  Output: { jobId: string }; 
 };
 
 type OutputScreenRouteProp = RouteProp<RootStackParamList, 'Output'>;
 
-// --- MOCK VERİLER ---
-// Bu veriler, Firebase'den gelmesi beklenen verileri simüle ediyor
-const MOCK_FIREBASE_DATA = {
-    // Gerçekte: job.data().logoUrl
-    logoUrl: "https://placehold.co/400x400/FFFFFF/000000?text=HARRISON+%26+CO.", 
-    // Gerçekte: job.data().prompt
-    prompt: "A professional logo for Harrison & Co. Law Firm, using balanced serif fonts",
-    // Gerçekte: job.data().style
-    style: "Monogram",
+// Job Verisi için Tip Tanımı
+interface JobData {
+    prompt: string;
+    style: string;
+    logoUrl: string;
+    status: 'done' | 'failed' | 'processing';
+}
+
+// Başlangıç verisi
+const INITIAL_JOB_DATA: JobData = {
+    prompt: 'Loading...',
+    style: 'Loading',
+    logoUrl: 'https://placehold.co/400x400/333333/FFFFFF?text=LOADING',
+    status: 'processing', 
 };
-const MOCK_LOGO_URL = MOCK_FIREBASE_DATA.logoUrl;
-// --- MOCK VERİLER SONU ---
 
 
 const OutputScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<OutputScreenRouteProp>();
   
-  // Navigasyon parametresinden sadece jobId alınır
   const { jobId } = route.params;
 
-  // Gerçekte, burada Firebase'den çekilecek verileri tutan state
-  const [jobData, setJobData] = useState(MOCK_FIREBASE_DATA);
+  const [jobData, setJobData] = useState<JobData>(INITIAL_JOB_DATA);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
 
+  // 1. Auth Kontrolü
   useEffect(() => {
-    // BURASI ÇOK ÖNEMLİ:
-    // Gerçekte: Firestore'daki jobs/{jobId} belgesini dinleyen onSnapshot kodu buraya gelecek.
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
-    // Şimdilik Mock Veri Gecikmesi: Verinin Firebase'den geldiğini simüle edelim.
-    setTimeout(() => {
-        setIsLoading(false);
-    }, 500); // 500ms bekleme
+
+  // 2. Firestore Listener
+  useEffect(() => {
+    // Kullanıcı ve jobId hazırsa dinlemeyi başlat
+    if (!user || !jobId) return; 
+
+    const userId = user.uid;
+    const jobRef = doc(db, `artifacts/${appId}/users/${userId}/jobs`, jobId);
     
-  }, [jobId]); // jobId değiştiğinde tekrar çalışır
+    // Output ekranında sadece veriyi çekiyoruz (onSnapshot ile real-time)
+    const unsubscribe = onSnapshot(jobRef, (docSnapshot) => {
+        if (docSnapshot.exists()) {
+            const data = docSnapshot.data() as JobData;
+            
+            // Eğer veri geldiyse ve 'done' ise yüklenmeyi bitir
+            if (data.status === 'done' || data.status === 'failed') {
+                setJobData(data);
+                setIsLoading(false);
+            } else {
+                setIsLoading(true);
+                setJobData(data);
+            }
+        } else {
+            console.error("Job document not found for output.");
+            setIsLoading(false);
+        }
+    }, (error) => {
+        console.error("Firestore listener failed on output screen:", error);
+        setIsLoading(false);
+    });
 
-  
-  // URL kopyalama fonksiyonu (React Native'de Clipboard kullanılır)
+    return () => unsubscribe();
+  }, [user, jobId]);
+
   const handleCopyPrompt = () => {
-    // Gerçek uygulamada Clipboard.setString(jobData.prompt); kullanılır
     console.log("Prompt kopyalandı:", jobData.prompt);
   };
   
   const handleClose = () => {
-      // Çıktı ekranını kapatıp Input ekranına döner
       navigation.goBack();
   };
+  
+  const isFailed = jobData.status === 'failed';
 
   return (
-    // Degrade Arka Planı (InputScreen ile aynı)
     <LinearGradient
       colors={['#1a1936', '#0e0e1b']} 
       style={styles.fullScreenContainer}
     >
       <SafeAreaView style={styles.safeArea}>
         
-        {/* 1. Başlık Çubuğu: "Your Design" ve Kapatma (X) simgesi */}
+        {/* Başlık Çubuğu */}
         <View style={styles.headerBar}>
             <Text style={styles.headerTitle}>Your Design</Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                {/* X Kapatma Simgesi */}
                 <Text style={styles.closeIcon}>✕</Text> 
             </TouchableOpacity>
         </View>
 
-        {/* Ana İçerik Kaydırılabilir Alan */}
         <ScrollView contentContainerStyle={styles.scrollContent}>
             
-            {isLoading ? (
+            {isLoading && jobData.status === 'processing' ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#943dff" />
-                    <Text style={styles.loadingText}>Loading design data...</Text>
+                    <Text style={styles.loadingText}>Loading design data from Firestore...</Text>
+                </View>
+            ) : isFailed ? (
+                 <View style={styles.loadingContainer}>
+                    <Text style={[styles.loadingText, {color: '#EF4444'}]}>Failed to retrieve final design.</Text>
+                    <Text style={styles.loadingText}>Please return to the input screen and try again.</Text>
                 </View>
             ) : (
                 <>
                     {/* 2. Logo Görüntüleyici Alanı */}
                     <View style={styles.logoContainer}>
-                        {/* Mock Logo Görseli (Beyaz arka plan) */}
                         <Image 
-                            source={{ uri: MOCK_LOGO_URL }}
+                            source={{ uri: jobData.logoUrl || "https://placehold.co/400x400/333333/FFFFFF?text=NO+LOGO" }}
                             style={styles.logoImage}
                             resizeMode="contain"
                         />
@@ -108,28 +147,22 @@ const OutputScreen: React.FC = () => {
                     {/* 3. Prompt Bilgisi Kartı */}
                     <View style={styles.promptCard}>
                         
-                        {/* Prompt Başlığı ve Kopyala Simgesi */}
                         <View style={styles.promptHeader}>
                             <Text style={styles.promptHeaderTitle}>Prompt</Text>
                             <TouchableOpacity onPress={handleCopyPrompt} style={styles.copyButton}>
-                                {/* Kopyala Simgesi için Mock: ❐ */}
                                 <Text style={styles.copyIcon}>❐ Copy</Text>
                             </TouchableOpacity>
                         </View>
 
-                        {/* Prompt Metni */}
                         <Text style={styles.promptText}>{jobData.prompt}</Text>
 
-                        {/* Seçilen Stil Çipi */}
                         <View style={styles.styleChip}>
-                            {/* Firebase'den gelen stil burada gösteriliyor */}
                             <Text style={styles.styleChipText}>{jobData.style}</Text> 
                         </View>
                     </View>
                 </>
             )}
             
-            {/* Job ID ve Debug Bilgisi (Opsiyonel) */}
             <Text style={styles.jobInfo}>Job ID: {jobId}</Text>
 
         </ScrollView>
@@ -139,17 +172,13 @@ const OutputScreen: React.FC = () => {
 };
 
 // --- STYLES ---
-
 const styles = StyleSheet.create({
-  // Genel Kapsayıcılar
   fullScreenContainer: {
     flex: 1,
   },
   safeArea: {
     flex: 1,
   },
-  
-  // 1. Başlık Çubuğu Stilleri
   headerBar: {
     paddingHorizontal: 24, 
     paddingTop: 10,
@@ -157,7 +186,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    // InputScreen'deki başlıkla aynı font stilini kullanır
   },
   headerTitle: {
     fontSize: 17, 
@@ -171,22 +199,18 @@ const styles = StyleSheet.create({
       fontSize: 24,
       color: '#fafafa',
   },
-  
-  // Ana İçerik Alanı
   scrollContent: {
     paddingHorizontal: 24, 
     paddingBottom: 30, 
-    alignItems: 'center', // Öğeleri ortalamak için
-    flexGrow: 1, // Loading ekranını ortalamak için
+    alignItems: 'center', 
+    flexGrow: 1, 
     justifyContent: 'flex-start',
   },
-  
-  // Loading Durumu
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    height: 400, // Yeterli dikey boşluk sağlamak için
+    height: 400, 
   },
   loadingText: {
       marginTop: 15,
@@ -194,12 +218,10 @@ const styles = StyleSheet.create({
       fontSize: 16,
       fontWeight: '600',
   },
-  
-  // 2. Logo Görüntüleyici Alanı
   logoContainer: {
     width: '100%',
-    aspectRatio: 1, // Kare yapmak için
-    backgroundColor: '#FFFFFF', // Beyaz arka plan
+    aspectRatio: 1, 
+    backgroundColor: '#FFFFFF', 
     borderRadius: 16,
     marginBottom: 20,
     overflow: 'hidden',
@@ -210,11 +232,9 @@ const styles = StyleSheet.create({
       width: '90%',
       height: '90%',
   },
-  
-  // 3. Prompt Bilgisi Kartı
   promptCard: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)', // Hafif şeffaf koyu arka plan
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', 
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -236,7 +256,7 @@ const styles = StyleSheet.create({
   },
   copyIcon: {
       fontSize: 14,
-      color: '#943dff', // Mor renk
+      color: '#943dff', 
       fontWeight: '600',
   },
   promptText: {
@@ -245,7 +265,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   styleChip: {
-    alignSelf: 'flex-start', // Sadece içeriği kadar genişlemesi için
+    alignSelf: 'flex-start', 
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 8,
     paddingHorizontal: 10,
@@ -256,8 +276,6 @@ const styles = StyleSheet.create({
     color: '#fafafa',
     fontWeight: '500',
   },
-  
-  // Debug/İş Bilgisi
   jobInfo: {
       fontSize: 10,
       color: '#71717a',

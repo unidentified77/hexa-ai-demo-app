@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Log dosyaları
+*.log
+firebase-debug.log
+firebase-debug.*.log

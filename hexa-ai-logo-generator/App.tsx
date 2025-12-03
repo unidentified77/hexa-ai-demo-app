@@ -14,12 +14,12 @@ export default function App() {
         <Stack.Screen
           name="Input"
           component={InputScreen}
-          options={{ headerShown: false }} // <--- Bu satır navigasyon başlığını gizler
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Output"
           component={OutputScreen}
-          options={{ headerShown: false }} // Output ekranı için de gizleyelim
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -1,0 +1,16 @@
+rules_version = '2';service cloud.firestore {match /databases/{database}/documents {
+
+// Genel olarak, kullanıcının kendi {userId} altındaki her şeye erişimini sağlar.
+match /artifacts/{appId}/users/{userId}/{document=**} {
+  allow read, write: if request.auth != null && request.auth.uid == userId;
+}
+
+// JOBS koleksiyonu için özel kural
+match /artifacts/{appId}/users/{userId}/jobs/{jobId} {
+    // Oluşturma (Create): Yalnızca kimliği doğrulanmış kullanıcı kendi id'si altında job oluşturabilir.
+    allow create: if request.auth != null && request.auth.uid == userId;
+
+    // Okuma/Güncelleme (Read/Update): Yalnızca job'ın sahibi okuyup güncelleyebilir.
+    allow read, update: if request.auth != null && request.auth.uid == userId;
+}
+}}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; 
 import { 
   View, 
   Text, 
@@ -8,9 +8,26 @@ import {
   TouchableOpacity, 
   SafeAreaView,
   ActivityIndicator, 
+  Dimensions,
 } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, useIsFocused } from '@react-navigation/native'; 
 import { LinearGradient } from 'expo-linear-gradient';
+
+// --- FIREBASE IMPORTS ---
+import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
+import { 
+    collection, 
+    addDoc, 
+    doc, 
+    onSnapshot, 
+    serverTimestamp,
+    query, 
+    where, 
+    getDocs, 
+} from 'firebase/firestore'; 
+
+import { db, auth, initialAuthToken, appId } from '../utils/firebase'; 
+// --- FIREBASE IMPORTS SONU ---
 
 // TypeScript için navigasyon tipi tanımlaması ve Durum Enum'u
 type RootStackParamList = {
@@ -18,17 +35,16 @@ type RootStackParamList = {
   Output: { jobId: string }; 
 };
 
-// Üretim Durumları
 type GenerationStatus = 'idle' | 'processing' | 'done' | 'failed';
 
 // --- MOCK VERİLER ve Bileşenler ---
 const LOGO_STYLES = [
-  { id: 'none', name: 'No Style', icon: '🚫' },
-  { id: 'monogram', name: 'Monogram', icon: '🔠' },
-  { id: 'abstract', name: 'Abstract', icon: '🌌' },
-  { id: 'mascot', name: 'Mascot', icon: '🐉' },
-  { id: 'minimal', name: '🔳', icon: '🔳' },
-  { id: 'vintage', name: 'Vintage', icon: '📜' },
+  { id: 'none', name: 'No Style', icon: '🚫', name: 'No Style' },
+  { id: 'monogram', name: 'Monogram', icon: '🔠', name: 'Monogram' },
+  { id: 'abstract', name: 'Abstract', icon: '🌌', name: 'Abstract' },
+  { id: 'mascot', name: 'Mascot', icon: '🐉', name: 'Mascot' },
+  { id: 'minimal', name: 'Minimal', icon: '🔳', name: 'Minimal' },
+  { id: 'vintage', name: 'Vintage', icon: '📜', name: 'Vintage' },
 ];
 
 interface StyleChipProps {
@@ -49,17 +65,16 @@ const StyleChip: React.FC<StyleChipProps> = ({ styleData, isSelected, onSelect }
   </TouchableOpacity>
 );
 
-// --- YENİ BİLEŞEN: StatusDisplay (Durum Göstergesi) ---
+
+// --- StatusDisplay BİLEŞENİ ---
 interface StatusDisplayProps {
   status: GenerationStatus;
   jobId: string;
   onTap: (jobId: string) => void;
   onRetry: () => void;
-  // Başarılı durumda gösterilecek mock logo URL'si
-  mockLogoUrl?: string; 
 }
 
-const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onRetry, mockLogoUrl }) => {
+const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onRetry }) => {
   const isProcessing = status === 'processing';
   const isDone = status === 'done';
   const isFailed = status === 'failed';
@@ -73,21 +88,20 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onR
   if (isProcessing) {
     title = 'Creating Your Design...';
     subtitle = 'Ready in 2 minutes';
-    icon = <ActivityIndicator size="small" color="#fafafa" />;
-    color = '#1c1c1e'; // Koyu gri arka plan
+    icon = <ActivityIndicator size="large" color="#fff" />;
+    color = '#1c1c1e';
     iconBgColor = 'transparent';
   } else if (isDone) {
     title = 'Your Design is Ready';
     subtitle = 'Tap to see it.';
-    // Mock logo görseli veya yer tutucu
-    icon = <View style={styles.mockLogoThumb}><Text style={{fontSize: 8}}>HEXA</Text></View>; 
-    color = '#943dff'; // Mor arka plan
+    icon = <View style={styles.thumbnailBox}><Text style={styles.thumbnailText}>HEXA</Text></View>; 
+    color = '#943dff';
     iconBgColor = '#fafafa';
   } else if (isFailed) {
     title = 'Oops, something went wrong!';
     subtitle = 'Click to try again.';
-    icon = <Text style={styles.failedIcon}>!</Text>; // Beyaz ünlem işareti
-    color = '#EF4444'; // Kırmızı arka plan
+    icon = <Text style={styles.failedIcon}>!</Text>; 
+    color = '#EF4444'; 
     iconBgColor = '#fafafa';
   }
 
@@ -108,12 +122,12 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onR
         activeOpacity={isClickable ? 0.7 : 1}
     >
       
-        <View style={[styles.statusIconWrapper, { backgroundColor: iconBgColor }]}>
+        <View style={styles.statusIconWrapperFigma}>
             {icon}
         </View>
         <View style={styles.statusTextWrapper}>
-            <Text style={styles.statusTitle}>{title}</Text>
-            <Text style={styles.statusSubtitle}>{subtitle}</Text>
+            <Text style={styles.statusTitleFigma}>{title}</Text>
+            <Text style={styles.statusSubtitleFigma}>{subtitle}</Text>
         </View>
       
     </TouchableOpacity>
@@ -124,52 +138,136 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onR
 
 const InputScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const isFocused = useIsFocused();
+  const scrollViewRef = useRef<ScrollView>(null);
   
   // State Yönetimi
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
+
   const [prompt, setPrompt] = useState("");
   const [selectedStyleId, setSelectedStyleId] = useState('none');
   const [jobStatus, setJobStatus] = useState<GenerationStatus>('idle');
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+  const [jobUnsubscribe, setJobUnsubscribe] = useState<(() => void) | null>(null);
 
   const MAX_CHAR_COUNT = 500;
   
+  // 1. Firebase Auth ve Initialization
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+        if (!currentUser) {
+            if (initialAuthToken) {
+                try {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } catch (error) {
+                    await signInAnonymously(auth);
+                }
+            } else {
+                await signInAnonymously(auth);
+            }
+        }
+        setUser(auth.currentUser);
+        setIsAuthReady(true);
+    });
+    return () => unsubscribe();
+  }, []);
+  
+  // 2. İşlem Durumunu Sıfırlama (OutputScreen'den geri dönüldüğünde)
+  useEffect(() => {
+      // Eğer ekran odaklanırsa (OutputScreen'den geri dönüldü) ve işlem tamamlanmışsa
+      if (isFocused && (jobStatus === 'done' || jobStatus === 'failed')) {
+          handleResetState(); // Durumu resetle
+      }
+  }, [isFocused]);
+
+
+  // 3. Job Listener
+  useEffect(() => {
+    if (!isAuthReady || !user || !currentJobId) {
+        return;
+    }
+    
+    const userId = user.uid;
+    const jobRef = doc(db, `artifacts/${appId}/users/${userId}/jobs`, currentJobId);
+
+    const unsubscribe = onSnapshot(jobRef, (docSnapshot) => {
+        if (docSnapshot.exists()) {
+            const data = docSnapshot.data();
+            const newStatus = data?.status as GenerationStatus;
+            
+            setJobStatus(newStatus);
+            console.log("Firestore Status Update:", newStatus); 
+            
+            // İşlem bittiğinde (done/failed), dinleyiciyi sonlandırabiliriz.
+            if (newStatus === 'done' || newStatus === 'failed') {
+                if (jobUnsubscribe) {
+                    jobUnsubscribe();
+                    setJobUnsubscribe(null);
+                }
+            }
+        } else {
+            console.warn("Job document does not exist anymore.");
+            setJobStatus('failed'); 
+        }
+    }, (error) => {
+        console.error("Firestore listener failed:", error);
+        setJobStatus('failed');
+    });
+
+    setJobUnsubscribe(() => unsubscribe);
+    return () => {
+        if(unsubscribe) unsubscribe();
+    };
+
+  }, [isAuthReady, user, currentJobId]); 
+  
   // --- Fonksiyonellik ---
 
+  const handleResetState = () => {
+      setJobStatus('idle');
+      setCurrentJobId(null);
+      if (jobUnsubscribe) {
+          jobUnsubscribe();
+          setJobUnsubscribe(null);
+      }
+  }
+
   const handleCreateLogo = async () => {
-    if (jobStatus === 'processing') return; // Zaten işleniyorsa engelle
+    if (jobStatus === 'processing' || !user) {
+        console.error("Create blocked: Status is processing or user is null.");
+        return; 
+    }
 
     setJobStatus('processing'); 
     
-    // Gerçekte: Firestore'a yazılacak
-    const newJobId = `job-${Date.now()}`; 
-    setCurrentJobId(newJobId);
-    
-    console.log(`İşlem başlatıldı: ${newJobId}. Geliştirme süresi 2-4 saniye.`);
+    try {
+        const newJobRef = await addDoc(collection(db, `artifacts/${appId}/users/${user.uid}/jobs`), {
+            status: 'processing',
+            prompt: prompt,
+            style: LOGO_STYLES.find(s => s.id === selectedStyleId)?.name || 'No Style',
+            userId: user.uid, 
+            createdAt: serverTimestamp(),
+            logoUrl: '',
+        });
+        
+        // Yeni ID geldiğinde state güncellenir ve listener yeni belgeye geçer
+        setCurrentJobId(newJobRef.id);
+        console.log(`İşlem başlatıldı. Job ID: ${newJobRef.id}. Firestore Yazma Başarılı.`);
 
-    // MOCK Gecikme Süresi: 2-4 saniyeye düşürüldü
-    const mockDelay = Math.random() * (4000 - 2000) + 2000; 
-    
-    setTimeout(() => {
-        // Mock Başarısızlık/Başarı
-        const success = Math.random() > 0.2; 
-
-        if (success) {
-            setJobStatus('done');
-        } else {
-            setJobStatus('failed');
-        }
-    }, mockDelay); 
+    } catch (error) {
+        console.error("--- KRİTİK HATA: Firestore'a Yazma Başarısız ---", error);
+        setJobStatus('failed');
+    }
   };
   
   const handleTapResult = (jobId: string) => {
-    // Output Ekranına Gitme
     navigation.navigate('Output', { jobId });
   };
 
   const handleRetry = () => {
-    // Hata durumunda yeniden deneme
-    setJobStatus('idle');
-    setCurrentJobId(null);
+    // Resetlemeden direkt başlat. Böylece StatusDisplay ekranda kalır, sadece içeriği 'Loading'e döner.
+    handleCreateLogo();
   };
 
   const handleSurpriseMe = () => {
@@ -181,8 +279,45 @@ const InputScreen: React.FC = () => {
     setSelectedStyleId(id);
   };
   
-  // Formun ne kadar aşağı itileceğini belirler
+  const handleViewHistory = async () => {
+      if (!user) {
+          console.warn("User not authenticated yet.");
+          return;
+      }
+      const userId = user.uid;
+      const jobsRef = collection(db, `artifacts/${appId}/users/${userId}/jobs`);
+      const q = query(jobsRef, where("status", "in", ["done", "failed"]));
+      
+      try {
+          const querySnapshot = await getDocs(q);
+          const history = querySnapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+          }));
+          
+          console.log(`--- Tarihçe (History) Sorgu Sonucu ---`);
+          console.log(`Bulunan ${history.length} adet tamamlanmış iş.`);
+          if (history.length > 0) {
+              console.table(history);
+          } else {
+              console.log("Henüz tamamlanmış veya başarısız iş bulunamadı.");
+          }
+      } catch (e) {
+          console.error("History çekilirken hata oluştu:", e);
+      }
+  }
+  
   const isStatusActive = jobStatus !== 'idle';
+  const showStatusDisplay = isStatusActive && currentJobId; 
+
+  if (!isAuthReady) {
+      return (
+          <View style={[styles.fullScreenContainer, {justifyContent: 'center', alignItems: 'center', backgroundColor: '#000'}]}>
+              <ActivityIndicator size="large" color="#943dff" />
+              <Text style={{color: '#fafafa', marginTop: 10}}>Authenticating...</Text>
+          </View>
+      );
+  }
 
   return (
     <LinearGradient
@@ -191,35 +326,32 @@ const InputScreen: React.FC = () => {
     >
       <SafeAreaView style={styles.safeArea}>
         
-        {/* Başlık (AI Logo) */}
         <View style={styles.headerBox}>
           <Text style={styles.headerTitle}>AI Logo</Text>
+          <TouchableOpacity onPress={handleViewHistory} style={styles.historyButton}>
+              <Text style={styles.historyIcon}>📜</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Status Chip (Başlık ile Form arasında yer alır) */}
-        {isStatusActive && currentJobId && (
+        {showStatusDisplay && (
             <View style={styles.fixedStatusContainer}>
                 <StatusDisplay
                     status={jobStatus}
-                    jobId={currentJobId}
+                    jobId={currentJobId!}
                     onTap={handleTapResult}
                     onRetry={handleRetry}
                 />
             </View>
         )}
 
-        {/* Ana İçerik Kaydırılabilir Alan */}
-        {/* Form içeriği, Status'a göre aşağı itilir (paddingTop ile) */}
-        <ScrollView contentContainerStyle={[
-            styles.scrollContent,
-            // StatusDisplay aktifse, ona yer açmak için üstten boşluk bırakılır
-            isStatusActive && styles.scrollContentShifted
-        ]}>
+        <ScrollView 
+            ref={scrollViewRef}
+            contentContainerStyle={[
+                styles.scrollContent,
+                showStatusDisplay && styles.scrollContentShifted 
+            ]}>
               
-              {/* Form Alanları (IDLE Durumunda da Görünür) */}
-              
-              {/* 1. Prompt Giriş Alanı */}
-              <View style={styles.sectionHeader}>
+              <View style={[styles.sectionHeader, showStatusDisplay && {marginTop: 0}]}> 
                   <Text style={styles.sectionTitle}>Enter Your Prompt</Text>
                   <TouchableOpacity onPress={handleSurpriseMe} style={styles.surpriseChipContainer}>
                       <Text style={styles.surpriseIcon}>🎲</Text> 
@@ -227,7 +359,6 @@ const InputScreen: React.FC = () => {
                   </TouchableOpacity>
               </View>
 
-              {/* Prompt Text Input */}
               <View style={styles.textAreaContainer}>
                   <TextInput
                       style={styles.textInput}
@@ -237,17 +368,15 @@ const InputScreen: React.FC = () => {
                       maxLength={MAX_CHAR_COUNT}
                       placeholder="A blue lion logo reading 'HEXA' in bold letters" 
                       placeholderTextColor="#71717a"
-                      editable={jobStatus === 'idle' || jobStatus === 'failed'} // İşlenirken düzenleme engellenir
+                      editable={jobStatus === 'idle' || jobStatus === 'failed'} 
                   />
                   <Text style={styles.charCount}>
                       {prompt.length}/{MAX_CHAR_COUNT}
                   </Text>
               </View>
 
-              {/* 2. Logo Styles Alanı */}
               <Text style={styles.sectionTitle}>Logo Styles</Text>
               
-              {/* Stil Seçim Izgarası (Yatay Kaydırılabilir) */}
               <ScrollView 
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -263,12 +392,11 @@ const InputScreen: React.FC = () => {
                   ))}
               </ScrollView>
 
-              {/* CREATE DÜĞMESİ */}
               <TouchableOpacity 
                   onPress={handleCreateLogo} 
                   style={[styles.createButtonWrapper, (jobStatus === 'processing' || jobStatus === 'done') && styles.createButtonDisabled]}
                   activeOpacity={0.8}
-                  disabled={jobStatus === 'processing' || jobStatus === 'done'}
+                  disabled={jobStatus === 'processing' || jobStatus === 'done' || !user}
               >
                   <LinearGradient
                       colors={['#943dff', '#2938dc']} 
@@ -287,96 +415,100 @@ const InputScreen: React.FC = () => {
   );
 };
 
-// --- STYLES ---
-
-const STATUS_HEIGHT = 80; // StatusDisplay'in tahmini yüksekliği
+const STATUS_HEIGHT = 70; 
 
 const styles = StyleSheet.create({
-  // Genel Kapsayıcılar
   fullScreenContainer: {
     flex: 1,
   },
   safeArea: {
     flex: 1,
   },
-  
-  // Üst Başlık
   headerBox: {
     paddingTop: 50, 
     paddingBottom: 12,
     alignItems: 'center',
     backgroundColor: 'transparent', 
+    flexDirection: 'row', 
+    justifyContent: 'center', 
+    position: 'relative', 
   },
   headerTitle: {
     fontSize: 17, 
     fontWeight: '800', 
     color: '#fafafa', 
   },
-  
-  // Form/Scroll İçeriği
+  historyButton: {
+      position: 'absolute',
+      right: 24,
+      top: 50,
+      padding: 5,
+  },
+  historyIcon: {
+      fontSize: 24,
+  },
   scrollContent: {
     paddingHorizontal: 24, 
     paddingBottom: 30, 
   },
-  // StatusDisplay aktif olduğunda ScrollView'ı aşağı itme stili
   scrollContentShifted: {
-      paddingTop: STATUS_HEIGHT + 15, // StatusDisplay yüksekliği + biraz boşluk
+      paddingTop: STATUS_HEIGHT + 15, 
   },
-
-  // Status Display (Yeni Konum)
   fixedStatusContainer: {
     position: 'absolute',
-    top: 90, // HeaderBox'ın altından başlar (50+12+28 boşluk tahmini)
+    top: 75, 
     zIndex: 10,
     width: '100%',
-    paddingHorizontal: 24, // MainContainer ile aynı padding
+    paddingHorizontal: 24, 
   },
-  
-  // StatusDisplay Stilleri
   statusContainer: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 12, 
     gap: 15,
     height: STATUS_HEIGHT,
   },
-  statusIconWrapper: {
-      width: 40,
-      height: 40,
-      borderRadius: 8,
-      backgroundColor: 'rgba(0,0,0,0.2)',
+  statusIconWrapperFigma: {
+      width: 46,
+      height: 46,
+      borderRadius: 23, 
+      backgroundColor: '#333', 
       justifyContent: 'center',
       alignItems: 'center',
+      opacity: 1, 
   },
   statusTextWrapper: {
     flex: 1,
+    paddingLeft: 5,
   },
-  statusTitle: {
+  statusTitleFigma: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '700', 
     color: '#fafafa',
   },
-  statusSubtitle: {
+  statusSubtitleFigma: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
+    color: 'rgba(255,255,255,0.7)',
     marginTop: 2,
   },
-  mockLogoThumb: {
-      width: '100%',
-      height: '100%',
-      backgroundColor: '#f9f9f9', // Beyaz mock logo
-      borderRadius: 6,
+  thumbnailBox: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: '#fff', 
       justifyContent: 'center',
       alignItems: 'center',
   },
+  thumbnailText: {
+      fontSize: 10,
+      color: '#333',
+  },
   failedIcon: {
       fontSize: 24,
-      color: '#EF4444', // Kırmızı ünlem
+      color: '#EF4444', 
   },
-
-  // Form Stilleri
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -426,8 +558,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 5,
   },
-  
-  // Stil Çipleri
   styleGrid: {
     paddingVertical: 10,
     gap: 12, 
@@ -465,8 +595,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
-
-  // Create Düğmesi
   createButtonWrapper: {
       borderRadius: 50, 
       overflow: 'hidden',

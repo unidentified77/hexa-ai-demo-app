@@ -9,116 +9,194 @@ export const COLORS = {
     DARK_1000: '#09090B',
     DARK_900: '#1C1C1E',
     DARK_500: '#71717A',
+    DARK_300: '#D4D4D8',
     PRIMARY_PURPLE: '#943DFF',
     WHITE: '#FAFAFA',
     ERROR_RED: '#EF4444',
 };
 
 export const styles = StyleSheet.create({
-    // --- Arka plan containerlar---
+    // --- STANDART LAYOUT ---
     mainContainer: {
         flex: 1,
-        backgroundColor: '#09090B', // Figma: Dark-1000
+        backgroundColor: COLORS.DARK_1000, 
     },
     backgroundImage: {
         flex: 1,
         width: '100%',
         height: '100%',
     },
-    safeArea: {
-        flex: 1,
-    },
-    // -------------------------------------
-
+    safeArea: { flex: 1 },
     headerBox: {
         height: 60,
-        paddingVertical: 12, 
+        paddingVertical: 12,
         alignItems: 'center',
-        backgroundColor: 'transparent', 
-        flexDirection: 'row', 
-        justifyContent: 'center', 
-        position: 'relative', 
-        paddingHorizontal: 24,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        paddingHorizontal: PADDING_HORIZONTAL,
     },
     headerTitle: {
         fontFamily:'Manrope-ExtraBold',
         fontSize: 17,
         fontWeight: '800',
-        color: '#fafafa',
-        lineHeight: 22,
-        letterSpacing: -0.17,
+        color: COLORS.WHITE,
     },
     historyButton: {
         position: 'absolute',
-        right: 24,
+        right: PADDING_HORIZONTAL,
         top: 15,
         padding: 5,
     },
-    historyIcon: {
-        fontSize: 24,
-    },
+    historyIcon: { fontSize: 24 },
+    
+    scrollView: { flex: 1 },
     scrollContent: {
-        paddingHorizontal: 24, 
-        paddingBottom: 30 + 56 + 15, // 30 (default) + 56 (Button H) + 15 (Footer pad)
+        paddingHorizontal: PADDING_HORIZONTAL,
+        paddingBottom: 30 + BUTTON_HEIGHT + FOOTER_VERTICAL_PADDING,
     },
     scrollContentShifted: {
-        paddingTop: STATUS_HEIGHT + 15, 
+        paddingTop: STATUS_HEIGHT + 24 + 10,
     },
+
+    // --- STATUS DISPLAY  ---
     fixedStatusContainer: {
         position: 'absolute',
-        top: 75,
-        zIndex: 10,
+        top: 112, 
+        zIndex: 100,
         width: '100%',
-        paddingHorizontal: 24, 
+        paddingHorizontal: PADDING_HORIZONTAL, 
     },
+
+    // Ana Kapsayıcı
     statusContainer: {
         width: '100%',
+        height: 70, 
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 12,
-        borderRadius: 12, 
-        gap: 15,
-        height: STATUS_HEIGHT,
+        padding: 0, 
+        gap: 0,
     },
-    statusIconWrapperFigma: {
-        width: 46,
-        height: 46,
-        borderRadius: 23, 
-        backgroundColor: '#333', 
+
+    // --- STATUS DISPLAY SOL PARÇA (İKON) ---
+    leftBoxProcessing: {
+        width: 70, 
+        height: 70, 
         justifyContent: 'center',
         alignItems: 'center',
-        opacity: 1, 
+        backgroundColor: '#18181B', // Senin verdiğin renk
+        borderTopLeftRadius: 16,
+        borderBottomLeftRadius: 16,
+        borderTopRightRadius: 0,
+        borderBottomRightRadius: 0,
     },
-    statusTextWrapper: {
+    // DİĞER DURUMLAR İÇİN SOL (Done/Failed)
+    leftBoxSolid: {
+        width: 70, 
+        height: 70, 
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderTopLeftRadius: 16,
+        borderBottomLeftRadius: 16,
+        borderTopRightRadius: 0,
+        borderBottomRightRadius: 0,
+    },
+
+    // --- STATUS DISPLAY SAĞ PARÇA ---
+    rightBoxProcessingGradient: {
         flex: 1,
-        paddingLeft: 5,
+        height: 70,
+        justifyContent: 'center',
+        paddingHorizontal: 12,
+        gap: 4,
+        backgroundColor: '#27272A',
+        borderTopRightRadius: 16,
+        borderBottomRightRadius: 16,
+        borderTopLeftRadius: 0,
+        borderBottomLeftRadius: 0,
     },
-    statusTitleFigma: {
+
+    // DİĞER DURUMLAR İÇİN SAĞ (Done/Failed)
+    rightBoxSolid: {
+        flex: 1,
+        height: 70,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        paddingHorizontal: 12,
+        gap: 4,
+        borderTopRightRadius: 16,
+        borderBottomRightRadius: 16,
+        borderTopLeftRadius: 0,
+        borderBottomLeftRadius: 0,
+    },
+
+    // --- METİNLER ---
+    statusTitle: {
         fontSize: 14,
         fontWeight: '700', 
-        color: '#fafafa',
+        color: COLORS.WHITE,
+        fontFamily: 'Manrope-ExtraBold',
     },
-    statusSubtitleFigma: {
-        fontSize: 12,
-        color: 'rgba(255,255,255,0.7)',
-        marginTop: 2,
+    statusSubtitleProcessing: {
+        color: COLORS.DARK_500,
+        fontFamily: 'Manrope-Regular',
+        fontSize: 13,
+        fontWeight: '500',
+        lineHeight: 18,
+        letterSpacing: -0.13,
     },
-    thumbnailBox: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#fff', 
+    statusSubtitleResult: {
+        color: COLORS.DARK_300, 
+        fontFamily: 'Manrope-Regular',
+        fontSize: 13,
+        fontWeight: '500',
+        lineHeight: 18,
+        letterSpacing: -0.13,
+    },
+    statusLeftBoxFailed: {
+        width: 70, 
+        height: 70, 
+        borderTopLeftRadius: 16,
+        borderBottomLeftRadius: 16,
+        borderTopRightRadius: 0,
+        borderBottomRightRadius: 0,
+        overflow: 'hidden',
+        backgroundColor: COLORS.ERROR_RED, 
+    },
+
+    statusOverlayFailed: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(239, 68, 68, 0.70)',
+        zIndex: 1,
+    },
+
+    statusFailedIconContainer: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        zIndex: 2, // En üstte
     },
-    thumbnailText: {
-        fontSize: 10,
-        color: '#333',
+
+    statusRightBoxFailed: {
+        flex: 1,
+        height: 70,
+        paddingHorizontal: 12, 
+        gap: 4,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        borderTopRightRadius: 16,
+        borderBottomRightRadius: 16,
+        borderTopLeftRadius: 0,
+        borderBottomLeftRadius: 0,
+        backgroundColor: COLORS.ERROR_RED, 
     },
-    failedIcon: {
-        fontSize: 24,
-        color: '#EF4444', 
+    thumbnailBox: {
+        width: 40, height: 40, borderRadius: 8, backgroundColor: COLORS.WHITE, 
+        justifyContent: 'center', alignItems: 'center',
     },
+    thumbnailText: { fontSize: 10, color: COLORS.DARK_900 },
+    failedIcon: { fontSize: 24, color: COLORS.WHITE },
+
+    // --- FORM ALANLARI ---
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -127,7 +205,7 @@ export const styles = StyleSheet.create({
         marginTop: 20,
     },
     sectionTitle: {
-        color: '#FAFAFA',
+        color: COLORS.WHITE,
         textAlign: 'left',
         fontFamily: 'Manrope-ExtraBold',
         fontSize: 20,
@@ -148,7 +226,7 @@ export const styles = StyleSheet.create({
     },
     surpriseText: {
         fontSize: 13,
-        color: '#fafafa',
+        color: COLORS.WHITE,
         fontWeight: '500',
     },
     textAreaContainer: {
@@ -162,7 +240,7 @@ export const styles = StyleSheet.create({
     textInput: {
         flex: 1, 
         textAlignVertical: 'top', 
-        color: '#FAFAFA', 
+        color: COLORS.WHITE, 
         fontFamily: 'Manrope-Regular', 
         fontSize: 16, 
         fontWeight: '400', 
@@ -170,21 +248,21 @@ export const styles = StyleSheet.create({
     },
     charCount: {
         fontSize: 12,
-        color: '#71717a', 
+        color: COLORS.DARK_500, 
         textAlign: 'right',
         marginTop: 5,
     },
+    
+    // --- STYLE CHIP (LOGO SEÇİMİ) ---
     styleGrid: {
         paddingVertical: 10,
-        gap: 8,
+        gap: 8, 
         marginBottom: 30, 
-        paddingHorizontal: 24,
+        paddingHorizontal: PADDING_HORIZONTAL, 
     },
-    
-    // --- STYLE CHIP STYLES ---
     chipWrapper: {
         alignItems: 'center',
-        marginRight: 0,
+        marginRight: 0, 
     },
     chipVisualContainer: {
         width: 90,
@@ -196,18 +274,14 @@ export const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
     },
-
-    // -- SEÇİLİ OLMA DURUMU (Highlights) --
     selectedBorder: {
-        borderColor: '#943DFF', // Neon Mor
-        borderWidth: 3,         // Kalın Çerçeve
+        borderColor: COLORS.PRIMARY_PURPLE, 
+        borderWidth: 3,         
     },
     unselectedNoStyleBorder: {
-        borderColor: '#FAFAFA', // Varsayılan Beyaz
+        borderColor: COLORS.WHITE, 
         borderWidth: 2,
     },
-
-    // No Style İçin Temel Kutu
     noStyleBoxBase: {
         width: '100%',
         height: '100%',
@@ -224,8 +298,6 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-
-    // Resimli Kutular İçin Sarmalayıcı
     imageWrapper: {
         width: '100%',
         height: '100%',
@@ -242,10 +314,8 @@ export const styles = StyleSheet.create({
     styleImageRadius: {
         borderRadius: 14, 
     },
-
-    // Seçili Metin Stili
     chipTextSelected: {
-        color: '#FAFAFA',
+        color: COLORS.WHITE,
         textAlign: 'center',
         fontFamily: 'Manrope-Regular', 
         fontSize: 13,
@@ -253,38 +323,35 @@ export const styles = StyleSheet.create({
         lineHeight: 18,
         letterSpacing: -0.13,
     },
-    // Seçili Olmayan Metin Stili
     chipTextUnselected: {
-        color: '#71717A',
+        color: COLORS.DARK_500,
         textAlign: 'center',
         fontFamily: 'Manrope-Regular',
         fontSize: 13,
         fontWeight: '400',
         lineHeight: 18,
     },
-    // ---------------------------------
-
-    // --- FOOTER STYLES ---
+    
+    // --- FOOTER & BUTTON ---
     footerGradientMask: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: -50, 
-      height: 100,
-      zIndex: 1,
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: -50, 
+        height: 100,
+        zIndex: 1, 
     },
     footerContainer: {
-      paddingHorizontal: 24, 
-      paddingVertical: 15,
-      zIndex: 2,
+        paddingHorizontal: PADDING_HORIZONTAL, 
+        paddingVertical: FOOTER_VERTICAL_PADDING,    
+        backgroundColor: 'transparent',
     },
     createButtonWrapper: {
-      borderRadius: 50, 
-      overflow: 'hidden',
-      zIndex: 3, // En üstte butonu tut
+        borderRadius: 50, 
+        overflow: 'hidden',
     },
     createButton: {
-        height: 56, 
+        height: BUTTON_HEIGHT, 
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
@@ -292,7 +359,7 @@ export const styles = StyleSheet.create({
         gap: 8,
     },
     createButtonText: {
-        color: '#FAFAFA',
+        color: COLORS.WHITE,
         textAlign: 'center',
         fontFamily: 'Manrope-ExtraBold',
         fontSize: 17,

@@ -498,7 +498,7 @@ const InputScreen: React.FC = () => {
                                 disabled={isGeneratingPrompt}
                             >
                                 {isGeneratingPrompt ? (
-                                    <ActivityIndicator size="small" color="#943dff" style={{ marginRight: 6 }} />
+                                    <ActivityIndicator size="small" color="#943dff" style={{ marginRight: 8, height:18 }} />
                                 ) : (
                                     <Text style={styles.surpriseIcon}>🎲</Text> 
                                 )}

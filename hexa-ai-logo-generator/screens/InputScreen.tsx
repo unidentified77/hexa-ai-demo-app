@@ -614,9 +614,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   createButtonText: {
+    color: '#FAFAFA',
+    textAlign: 'center',
+    fontFamily: 'Manrope-ExtraBold',
     fontSize: 17,
     fontWeight: '800',
-    color: '#fafafa',
+    lineHeight: 22,
+    letterSpacing: -0.17,
   },
   createButtonDisabled: {
       opacity: 0.5,

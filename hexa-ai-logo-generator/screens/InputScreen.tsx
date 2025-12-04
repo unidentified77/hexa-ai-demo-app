@@ -153,6 +153,7 @@ const InputScreen: React.FC = () => {
   
   const [fontsLoaded] = useFonts({
     'Manrope-ExtraBold': require('../assets/fonts/Manrope-ExtraBold.ttf'),
+    'Manrope-Regular': require('../assets/fonts/Manrope-Regular.ttf'),
   });
 
   // 1. Firebase Auth ve Initialization
@@ -529,10 +530,13 @@ const styles = StyleSheet.create({
     marginBottom: 30, 
   },
   textInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#fafafa',
+    flex: 1, 
     textAlignVertical: 'top', 
+    color: '#FAFAFA', 
+    fontFamily: 'Manrope-Regular', 
+    fontSize: 16, 
+    fontWeight: '400', 
+    lineHeight: 21,
   },
   charCount: {
     fontSize: 12,

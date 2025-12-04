@@ -500,9 +500,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   sectionTitle: {
-    fontSize: 20, 
-    fontWeight: '800', 
-    color: '#fafafa',
+    color: '#FAFAFA',
+    textAlign: 'left',
+    fontFamily: 'Manrope-ExtraBold',
+    fontSize: 20,
+    fontWeight: '800',
+    lineHeight: 25,
   },
   surpriseChipContainer: {
     flexDirection: 'row',

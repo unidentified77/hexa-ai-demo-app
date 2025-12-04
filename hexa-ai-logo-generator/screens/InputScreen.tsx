@@ -6,12 +6,12 @@ import {
   TextInput, 
   ScrollView, 
   TouchableOpacity, 
-  SafeAreaView,
   ActivityIndicator, 
   Dimensions,
   ImageBackground,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp, useIsFocused } from '@react-navigation/native'; 
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';

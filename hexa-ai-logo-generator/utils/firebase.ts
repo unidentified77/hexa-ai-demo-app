@@ -1,13 +1,16 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
 // --- GLOBAL FIREBASE ORTAM DEĞİŞKENLERİ ---
 // App ID'si
 export const appId: string = typeof __app_id !== 'undefined' ? __app_id : 'default-hexa-app'; 
 
 // Firebase Yapılandırmasını içeren ham string
-const rawFirebaseConfig: string = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+const rawFirebaseConfig: string =
+    Constants.expoConfig?.extra?.firebase_config ?? '{}';
 
 // Auth için özel token
 export const initialAuthToken: string = typeof __initial_auth_token !== 'undefined' ? __initialAuthToken : '';
@@ -41,4 +44,6 @@ if (!firebaseConfig.projectId) {
 // Firebase Uygulamasını ve Servislerini Başlatma (Single Instance)
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 export const db: Firestore = getFirestore(app);
-export const auth: Auth = getAuth(app);
+export const auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });

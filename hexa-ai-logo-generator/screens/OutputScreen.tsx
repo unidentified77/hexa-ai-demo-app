@@ -13,6 +13,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, RouteProp, useRoute, NavigationProp } from '@react-navigation/native';
 import { styles } from './OutputScreen.styles';
 import Svg, { Path } from 'react-native-svg';
+import * as Clipboard from 'expo-clipboard';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // --- FIREBASE IMPORTS ---
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
@@ -106,7 +108,8 @@ const OutputScreen: React.FC = () => {
     return () => unsubscribe();
   }, [user, jobId]);
 
-  const handleCopyPrompt = () => {
+  const handleCopyPrompt = async () => {
+    await Clipboard.setStringAsync(jobData.prompt);
     console.log("Prompt kopyalandı:", jobData.prompt);
   };
   
@@ -156,22 +159,25 @@ const OutputScreen: React.FC = () => {
                     </View>
 
                     {/* 3. Prompt Bilgisi Kartı */}
-                    <View style={styles.promptCard}>
-                        
+                    <LinearGradient
+                        colors={['rgba(148, 61, 255, 0.05)', 'rgba(41, 56, 220, 0.05)']}
+                        start={{ x: 1, y: 0 }} // 270 derece (Sağdan)
+                        end={{ x: 0, y: 0 }}   // (Sola)
+                        locations={[0.2459, 1]} // %24.59 ve %100 durakları
+                        style={styles.promptCard}
+                    >
                         <View style={styles.promptHeader}>
                             <Text style={styles.promptHeaderTitle}>Prompt</Text>
                             <TouchableOpacity onPress={handleCopyPrompt} style={styles.copyButton}>
-                            <CopyIcon /> 
-                            <Text style={styles.copyIcon}>Copy</Text> 
-                        </TouchableOpacity>
+                                <CopyIcon /> 
+                                <Text style={styles.copyIcon}>Copy</Text> 
+                            </TouchableOpacity>
                         </View>
-
                         <Text style={styles.promptText}>{jobData.prompt}</Text>
-
                         <View style={styles.styleChip}>
                             <Text style={styles.styleChipText}>{jobData.style}</Text> 
                         </View>
-                    </View>
+                    </LinearGradient>
                 </>
             )}
             

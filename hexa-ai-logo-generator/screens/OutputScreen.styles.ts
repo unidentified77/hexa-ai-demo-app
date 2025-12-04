@@ -24,9 +24,12 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerTitle: {
-        fontSize: 17,
+        marginTop:12,
+        fontFamily:'Manrope-Extrabold',
+        fontSize: 22,
         fontWeight: '800',
         color: '#fafafa',
+        lineHeight:28
     },
     closeButton: {
         padding: 5,
@@ -65,17 +68,25 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     logoImage: {
-        width: '90%',
-        height: '90%',
+        width: 342,
+        height: 342,
+        borderRadius: 16,
+        backgroundColor: '#E1E1E1', 
     },
     promptCard: {
-        width: '100%',
-        backgroundColor: 'rgba(255, 255, 255, 0.08)',
-        borderRadius: 16,
-        padding: 16,
+        width: '100%', 
+        alignSelf: 'stretch',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        gap: 12,
+        padding: 12,
+        borderRadius: 12,
+        backgroundColor: '#27272A', 
         marginBottom: 20,
     },
     promptHeader: {
+        width: '100%',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -99,12 +110,14 @@ export const styles = StyleSheet.create({
         fontWeight: '400',
     },
     promptText: {
+        width: '100%',
+        flexShrink: 1,
         fontSize: 16,
         color: '#fafafa',
         marginBottom: 12,
         fontWeight: '400',
         fontFamily: 'Manrope-Regular',
-        height: 21
+        lineHeight: 21,
     },
     styleChip: {
         paddingVertical: 4,

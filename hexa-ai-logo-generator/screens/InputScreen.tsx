@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useNavigation, NavigationProp, useIsFocused } from '@react-navigation/native'; 
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts } from 'expo-font';
 
 // --- FIREBASE IMPORTS ---
 import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
@@ -150,6 +151,10 @@ const InputScreen: React.FC = () => {
 
   const MAX_CHAR_COUNT = 500;
   
+  const [fontsLoaded] = useFonts({
+    'Manrope-ExtraBold': require('../assets/fonts/Manrope-ExtraBold.ttf'),
+  });
+
   // 1. Firebase Auth ve Initialization
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -281,13 +286,15 @@ const InputScreen: React.FC = () => {
   const isStatusActive = jobStatus !== 'idle';
   const showStatusDisplay = isStatusActive && currentJobId; 
 
-  if (!isAuthReady) {
-      return (
-          <View style={[styles.fullScreenContainer, {justifyContent: 'center', alignItems: 'center', backgroundColor: '#000'}]}>
-              <ActivityIndicator size="large" color="#943dff" />
-              <Text style={{color: '#fafafa', marginTop: 10}}>Authenticating...</Text>
-          </View>
-      );
+  if (!fontsLoaded || !isAuthReady) {
+    return (
+        <View style={[styles.fullScreenContainer, {justifyContent: 'center', alignItems: 'center', backgroundColor: '#000'}]}>
+            <ActivityIndicator size="large" color="#943dff" />
+            <Text style={{color: '#fafafa', marginTop: 10}}>
+                {!fontsLoaded ? "Loading fonts..." : "Authenticating..."}
+            </Text>
+        </View>
+    );
   }
 
   return (
@@ -396,18 +403,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerBox: {
-    paddingTop: 50, 
-    paddingBottom: 12,
+    height: 60,
+    paddingVertical: 12, // Figma: padding: 12px 0
     alignItems: 'center',
     backgroundColor: 'transparent', 
     flexDirection: 'row', 
-    justifyContent: 'center', 
+    justifyContent: 'center', // Başlık metnini ortalamak için 'center'
     position: 'relative', 
+    paddingHorizontal: 24,
   },
   headerTitle: {
-    fontSize: 17, 
-    fontWeight: '800', 
-    color: '#fafafa', 
+    fontFamily:'Manrope-ExtraBold',
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#fafafa',
+    lineHeight: 22,
+    letterSpacing: -0.17,
   },
   historyButton: {
       position: 'absolute',

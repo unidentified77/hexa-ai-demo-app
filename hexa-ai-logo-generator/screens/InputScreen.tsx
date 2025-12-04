@@ -15,6 +15,7 @@ import {
 import { useNavigation, NavigationProp, useIsFocused } from '@react-navigation/native'; 
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
+import Svg, { Path } from 'react-native-svg';
 
 // --- FIREBASE IMPORTS ---
 import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
@@ -160,6 +161,27 @@ const InputScreen: React.FC = () => {
     'Manrope-ExtraBold': require('../assets/fonts/Manrope-ExtraBold.ttf'),
     'Manrope-Regular': require('../assets/fonts/Manrope-Regular.ttf'),
   });
+
+  const CustomSparklesIcon = () => (
+    <Svg width={18} height={18} viewBox="0 0 18 18" fill="none">
+      {/* 1. Büyük Opak Yıldız */}
+      <Path
+        opacity={0.4}
+        d="M8.95831 0.833374C9.30349 0.833374 9.58331 1.1132 9.58331 1.45837C9.58331 3.1301 10.4255 4.85415 11.744 6.17268C13.0625 7.49122 14.7866 8.33337 16.4583 8.33337C16.8035 8.33337 17.0833 8.6132 17.0833 8.95837C17.0833 9.30355 16.8035 9.58337 16.4583 9.58337C14.7866 9.58337 13.0625 10.4255 11.744 11.7441C10.4255 13.0626 9.58331 14.7866 9.58331 16.4584C9.58331 16.8036 9.30349 17.0834 8.95831 17.0834C8.61313 17.0834 8.33331 16.8036 8.33331 16.4584C8.33331 14.7866 7.49115 13.0626 6.17262 11.7441C4.85409 10.4255 3.13004 9.58337 1.45831 9.58337C1.11314 9.58337 0.833313 9.30355 0.833313 8.95837C0.833313 8.6132 1.11314 8.33337 1.45831 8.33337C3.13004 8.33337 4.85409 7.49122 6.17262 6.17268C7.49115 4.85415 8.33331 3.1301 8.33331 1.45837C8.33331 1.1132 8.61313 0.833374 8.95831 0.833374Z"
+        fill="#FAFAFA"
+      />
+      {/* 2. Sağ Üst Küçük Yıldız */}
+      <Path
+        d="M15 0C15.1779 0 15.332 0.123284 15.3711 0.296832L15.5663 1.16334C15.6996 1.75501 16.1616 2.21706 16.7533 2.35034L17.6198 2.54553C17.7934 2.58463 17.9166 2.73877 17.9166 2.91667C17.9166 3.09456 17.7934 3.24871 17.6198 3.2878L16.7533 3.48299C16.1616 3.61627 15.6996 4.07832 15.5663 4.66999L15.3711 5.5365C15.332 5.71005 15.1779 5.83333 15 5.83333C14.8221 5.83333 14.6679 5.71005 14.6288 5.5365L14.4337 4.66999C14.3004 4.07832 13.8383 3.61627 13.2467 3.48299L12.3801 3.2878C12.2066 3.24871 12.0833 3.09456 12.0833 2.91667C12.0833 2.73877 12.2066 2.58463 12.3801 2.54553L13.2467 2.35034C13.8383 2.21706 14.3004 1.75501 14.4337 1.16335L14.6288 0.296832C14.6679 0.123284 14.8221 0 15 0Z"
+        fill="#FAFAFA"
+      />
+      {/* 3. Sol Alt Küçük Yıldız */}
+      <Path
+        d="M2.91667 12.0834C3.09456 12.0834 3.24871 12.2067 3.2878 12.3802L3.48299 13.2467C3.61627 13.8384 4.07832 14.3004 4.66999 14.4337L5.5365 14.6289C5.71005 14.668 5.83333 14.8221 5.83333 15C5.83333 15.1779 5.71005 15.3321 5.5365 15.3712L4.66999 15.5664C4.07832 15.6996 3.61627 16.1617 3.48299 16.7534L3.2878 17.6199C3.24871 17.7934 3.09456 17.9167 2.91667 17.9167C2.73877 17.9167 2.58463 17.7934 2.54553 17.6199L2.35034 16.7534C2.21706 16.1617 1.75501 15.6996 1.16335 15.5664L0.296832 15.3712C0.123284 15.3321 0 15.1779 0 15C0 14.8221 0.123284 14.668 0.296832 14.6289L1.16335 14.4337C1.75501 14.3004 2.21706 13.8384 2.35034 13.2467L2.54553 12.3802C2.58463 12.2067 2.73877 12.0834 2.91667 12.0834Z"
+        fill="#FAFAFA"
+      />
+    </Svg>
+  );
 
   // 1. Firebase Auth ve Initialization
   useEffect(() => {
@@ -387,14 +409,19 @@ const InputScreen: React.FC = () => {
                     disabled={jobStatus === 'processing' || jobStatus === 'done' || !user}
                 >
                     <LinearGradient
-                        colors={['#943dff', '#2938dc']} 
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={styles.createButton}
+                        colors={['#943DFF', '#2938DC']} 
+                        locations={[0.2459, 1]} 
+                        start={{ x: 1, y: 0 }}
+                        end={{ x: 0, y: 0 }}
+                        style={styles.createButton} // Bu stilde 'row' olduğu için yan yana gelecekler
                     >
+                        {/* Önce Yazı */}
                         <Text style={styles.createButtonText}>
-                          {jobStatus === 'processing' ? 'Processing...' : 'Create ✨'}
+                          {jobStatus === 'processing' ? 'Processing...' : 'Create'}
                         </Text>
+                        
+                        {/* Hemen Yanına Senin SVG İkonun */}
+                        {jobStatus !== 'processing' && <CustomSparklesIcon />}
                     </LinearGradient>
                 </TouchableOpacity>
           </ScrollView>
@@ -609,9 +636,12 @@ const styles = StyleSheet.create({
       marginTop: 20, 
   },
   createButton: {
-    height: 55, 
+    height: 56, 
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 24, 
+    gap: 8,
   },
   createButtonText: {
     color: '#FAFAFA',

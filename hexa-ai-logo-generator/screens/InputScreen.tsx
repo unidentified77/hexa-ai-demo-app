@@ -9,18 +9,16 @@ import {
     ImageBackground,
     StatusBar,
     ImageSourcePropType,
+    Image, // <--- Image import edildi
 } from 'react-native';
-
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp, useIsFocused } from '@react-navigation/native'; 
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import Svg, { Path } from 'react-native-svg';
 
-// --- STİL IMPORTU ---
 import { styles, STATUS_HEIGHT } from './InputScreen.styles'; 
 
-// --- FIREBASE IMPORTS ---
 import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
 import { 
     collection, 
@@ -31,7 +29,6 @@ import {
 } from 'firebase/firestore'; 
 
 import { db, auth, initialAuthToken, appId } from '../utils/firebase'; 
-// --- FIREBASE IMPORTS SONU ---
 
 const bgImage = require('../assets/images/back_gradient.png');
 
@@ -58,55 +55,22 @@ interface StyleChipProps {
     onSelect: (id: string) => void;
 }
 
-// --- NO STYLE LOGO ICON---
+// ... (NoStyleIcon, FailedIcon, CustomSparklesIcon - AYNI KALSIN) ...
+// Buraya uzun olmasın diye kopyalamadım, senin kodundaki o bileşenler aynen kalsın.
 const NoStyleIcon = () => (
     <View style={{ width: 33.333, height: 33.333, justifyContent: 'center', alignItems: 'center' }}>
-        
-        <Svg 
-            width={33.333} 
-            height={33.333} 
-            viewBox="0 0 37 37" 
-            fill="none" 
-            style={{ position: 'absolute' }}
-        >
-            <Path 
-                d="M18.0166 34.6833C27.2166 34.6833 34.6833 27.2166 34.6833 18.0166C34.6833 8.81664 27.2166 1.34998 18.0166 1.34998C8.81664 1.34998 1.34998 8.81664 1.34998 18.0166C1.34998 27.2166 8.81664 34.6833 18.0166 34.6833Z" 
-                stroke="#FAFAFA" 
-                strokeWidth="2.7" 
-                strokeMiterlimit="10" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-            />
+        <Svg width={33.333} height={33.333} viewBox="0 0 37 37" fill="none" style={{ position: 'absolute' }}>
+            <Path d="M18.0166 34.6833C27.2166 34.6833 34.6833 27.2166 34.6833 18.0166C34.6833 8.81664 27.2166 1.34998 18.0166 1.34998C8.81664 1.34998 1.34998 8.81664 1.34998 18.0166C1.34998 27.2166 8.81664 34.6833 18.0166 34.6833Z" stroke="#FAFAFA" strokeWidth="2.7" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
         </Svg>
-
-        <Svg 
-            width={23.333} 
-            height={23.333} 
-            viewBox="0 0 27 27" 
-            fill="none"
-            style={{ position: 'absolute' }}
-        >
-            <Path 
-                d="M24.6833 1.34998L1.34998 24.6833" 
-                stroke="#FAFAFA" 
-                strokeWidth="2.7" 
-                strokeMiterlimit="10" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-            />
+        <Svg width={23.333} height={23.333} viewBox="0 0 27 27" fill="none" style={{ position: 'absolute' }}>
+            <Path d="M24.6833 1.34998L1.34998 24.6833" stroke="#FAFAFA" strokeWidth="2.7" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
         </Svg>
     </View>
 );
 
-// --- FAILED DURUMU İÇİN YUVARLAK İÇİNDE ÜNLEM ---
 const FailedIcon = () => (
     <Svg width={29} height={29} viewBox="0 0 29 29" fill="none">
-        <Path 
-            fillRule="evenodd" 
-            clipRule="evenodd" 
-            d="M0 14.3333C0 6.41725 6.41725 0 14.3333 0C22.2494 0 28.6667 6.41725 28.6667 14.3333C28.6667 22.2494 22.2494 28.6667 14.3333 28.6667C6.41725 28.6667 0 22.2494 0 14.3333ZM13 19.6667C13 18.9303 13.5943 18.3333 14.3274 18.3333H14.3393C15.0724 18.3333 15.6667 18.9303 15.6667 19.6667C15.6667 20.403 15.0724 21 14.3393 21H14.3274C13.5943 21 13 20.403 13 19.6667ZM13 14.3333C13 15.0697 13.597 15.6667 14.3333 15.6667C15.0697 15.6667 15.6667 15.0697 15.6667 14.3333V9C15.6667 8.26362 15.0697 7.66667 14.3333 7.66667C13.597 7.66667 13 8.26362 13 9L13 14.3333Z" 
-            fill="#FAFAFA"
-        />
+        <Path fillRule="evenodd" clipRule="evenodd" d="M0 14.3333C0 6.41725 6.41725 0 14.3333 0C22.2494 0 28.6667 6.41725 28.6667 14.3333C28.6667 22.2494 22.2494 28.6667 14.3333 28.6667C6.41725 28.6667 0 22.2494 0 14.3333ZM13 19.6667C13 18.9303 13.5943 18.3333 14.3274 18.3333H14.3393C15.0724 18.3333 15.6667 18.9303 15.6667 19.6667C15.6667 20.403 15.0724 21 14.3393 21H14.3274C13.5943 21 13 20.403 13 19.6667ZM13 14.3333C13 15.0697 13.597 15.6667 14.3333 15.6667C15.0697 15.6667 15.6667 15.0697 15.6667 14.3333V9C15.6667 8.26362 15.0697 7.66667 14.3333 7.66667C13.597 7.66667 13 8.26362 13 9L13 14.3333Z" fill="#FAFAFA"/>
     </Svg>
 );
 
@@ -167,11 +131,12 @@ const StyleChip: React.FC<StyleChipProps> = ({ styleData, isSelected, onSelect }
 interface StatusDisplayProps {
     status: GenerationStatus;
     jobId: string;
+    resultUrl: string | null;
     onTap: (jobId: string) => void;
     onRetry: () => void;
 }
 
-const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onRetry }) => {
+const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, resultUrl, onTap, onRetry }) => {
     const isProcessing = status === 'processing';
     const isDone = status === 'done';
     const isFailed = status === 'failed';
@@ -182,8 +147,6 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onR
     let icon = null;
     let solidColor = '#1C1C1E'; 
 
-    // STATUS DISPLAYIN SUBTITLE STİLLERİ
-    // Processing ise 'statusSubtitleProcessing', değilse (Done/Fail) 'statusSubtitleResult'
     const subtitleStyle = isProcessing ? styles.statusSubtitleProcessing : styles.statusSubtitleResult;
 
     if (isProcessing) {
@@ -193,8 +156,21 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onR
     } else if (isDone) {
         title = 'Your Design is Ready';
         subtitle = 'Tap to see it.';
-        icon = <View style={styles.thumbnailBox}><Text style={styles.thumbnailText}>HEXA</Text></View>;
         solidColor = '#943dff'; 
+        
+        // --- RESİM VARSA GÖSTER ---
+        if (resultUrl) {
+            icon = (
+                <Image 
+                    source={{ uri: resultUrl }} 
+                    style={styles.generatedLogoImage} 
+                    resizeMode="cover" 
+                />
+            );
+        } else {
+            icon = <View style={styles.thumbnailBox}><Text style={styles.thumbnailText}>HEXA</Text></View>;
+        }
+
     } else if (isFailed) {
         title = 'Oops, something went wrong!';
         subtitle = 'Click to try again.';
@@ -236,23 +212,30 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, onTap, onR
             ) : isFailed ? (
                 // --- FAILED ---
                 <>
-                    <ImageBackground source={failTexture} style={styles.statusLeftBoxFailed} resizeMode="cover">
-                        <View style={styles.statusOverlayFailed} />
-                        <View style={styles.statusFailedIconContainer}>{icon}</View>
+                    <ImageBackground source={failTexture} style={styles.leftBoxFailed} resizeMode="cover">
+                        <View style={styles.failedOverlay} />
+                        <View style={styles.failedIconContainer}>{icon}</View>
                     </ImageBackground>
-                    <View style={styles.statusRightBoxFailed}>
+                    <View style={styles.rightBoxFailed}>
                         {renderTextContent()}
                     </View>
                 </>
             ) : (
                 // --- DONE ---
                 <>
-                    <View style={[styles.leftBoxSolid, { backgroundColor: solidColor }]}>
+                    <View style={[styles.leftBoxDone]}>
                         {icon}
                     </View>
-                    <View style={[styles.rightBoxSolid, { backgroundColor: solidColor }]}>
+
+                    <LinearGradient
+                        colors={['#943DFF', '#2938DC']} 
+                        locations={[0.2459, 1]} 
+                        start={{ x: 1, y: 0 }}
+                        end={{ x: 0, y: 0 }}
+                        style={styles.rightBoxDoneGradient} // Yeni stil
+                        >
                         {renderTextContent()}
-                    </View>
+                    </LinearGradient>
                 </>
             )}
         </TouchableOpacity>
@@ -273,6 +256,10 @@ const InputScreen: React.FC = () => {
     const [selectedStyleId, setSelectedStyleId] = useState('none');
     const [jobStatus, setJobStatus] = useState<GenerationStatus>('idle');
     const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+    
+    // --- YENİ STATE ---
+    const [generatedLogoUrl, setGeneratedLogoUrl] = useState<string | null>(null);
+
     const [jobUnsubscribe, setJobUnsubscribe] = useState<(() => void) | null>(null);
 
     const [fontsLoaded] = useFonts({
@@ -306,41 +293,70 @@ const InputScreen: React.FC = () => {
     }, [isFocused]);
 
     useEffect(() => {
-        if (!isAuthReady || !user || !currentJobId) return;
+        // Auth veya User yoksa log basıp çık
+        if (!isAuthReady) {
+            console.log("⏳ Auth henüz hazır değil, bekleniyor...");
+            return;
+        }
+        if (!user) {
+            console.log("👤 Kullanıcı oturumu yok.");
+            return;
+        }
+        if (!currentJobId) {
+            console.log("zzZ Job ID yok, dinleme yapılmıyor.");
+            return;
+        }
+        
+        console.log(`👂 LISTENER BAŞLADI! Şu Job ID dinleniyor: ${currentJobId}`); 
         
         const userId = user.uid;
+        // Doküman yolunu loglayalım ki hata varsa görelim
+        const docPath = `artifacts/${appId}/users/${userId}/jobs/${currentJobId}`;
+        console.log(`📂 Doküman Yolu: ${docPath}`);
+
         const jobRef = doc(db, `artifacts/${appId}/users/${userId}/jobs`, currentJobId);
 
         const unsubscribe = onSnapshot(jobRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
                 const data = docSnapshot.data();
                 const newStatus = data?.status as GenerationStatus;
+                const newUrl = data?.logoUrl || null; 
+                
+                console.log(`🔥 FIRESTORE DEĞİŞTİ!`);
+                console.log(`   Durum: ${newStatus}`);
+                console.log(`   URL Var mı?: ${newUrl ? 'EVET' : 'HAYIR'}`);
                 
                 setJobStatus(newStatus);
+                setGeneratedLogoUrl(newUrl);
                 
                 if (newStatus === 'done' || newStatus === 'failed') {
+                    console.log("🏁 İşlem tamamlandı (Done/Failed), listener kapatılıyor.");
                     if (jobUnsubscribe) {
                         jobUnsubscribe();
                         setJobUnsubscribe(null);
                     }
                 }
             } else {
+                console.warn("⚠️ Doküman bulunamadı! (Silinmiş olabilir)");
                 setJobStatus('failed'); 
             }
         }, (error) => {
+            console.error("❌ Listener içinde HATA oluştu:", error);
             setJobStatus('failed');
         });
 
         setJobUnsubscribe(() => unsubscribe);
         return () => {
+            console.log("🛑 Listener unmount ediliyor.");
             if(unsubscribe) unsubscribe();
         };
 
-    }, [isAuthReady, user, currentJobId]); 
+    }, [isAuthReady, user, currentJobId]);
     
     const handleResetState = () => {
         setJobStatus('idle');
         setCurrentJobId(null);
+        setGeneratedLogoUrl(null); // --- SIFIRLA ---
         if (jobUnsubscribe) {
             jobUnsubscribe();
             setJobUnsubscribe(null);
@@ -348,21 +364,50 @@ const InputScreen: React.FC = () => {
     }
 
     const handleCreateLogo = async () => {
-        if (jobStatus === 'processing' || !user) return;
+        console.log("🔘 'Create' Butonuna Tıklandı!");
+
+        if (jobStatus === 'processing') {
+            console.log("🚫 Zaten işlem sürüyor, tekrar basılamaz.");
+            return;
+        }
+        if (!user) {
+            console.error("🚫 Kullanıcı (user) NULL! Giriş yapılmamış.");
+            return;
+        }
+        
         setJobStatus('processing'); 
+        console.log("🔄 UI durumu 'processing' yapıldı.");
+        
         try {
-            const newJobRef = await addDoc(collection(db, `artifacts/${appId}/users/${user.uid}/jobs`), {
+            console.log("🚀 Firestore'a veri hazırlanıyor...");
+            
+            const selectedStyleName = LOGO_STYLES.find(s => s.id === selectedStyleId)?.name || 'No Style';
+            
+            const payload = {
                 status: 'processing',
                 prompt: prompt,
-                style: LOGO_STYLES.find(s => s.id === selectedStyleId)?.name || 'No Style',
+                style: selectedStyleName,
                 userId: user.uid, 
                 createdAt: serverTimestamp(),
                 logoUrl: '',
-            });
+            };
+            
+            console.log("📦 Gönderilecek Paket:", payload);
+            
+            // Koleksiyon yolunu kontrol et
+            const collPath = `artifacts/${appId}/users/${user.uid}/jobs`;
+            console.log(`🛣️ Hedef Koleksiyon: ${collPath}`);
+
+            const newJobRef = await addDoc(collection(db, collPath), payload);
+            
+            console.log(`✅ BAŞARILI! Firestore'a yazıldı. Belge ID: ${newJobRef.id}`);
             setCurrentJobId(newJobRef.id);
+
         } catch (error) {
+            console.error("💥 PATLADI! Firestore yazma hatası:", error);
             setJobStatus('failed');
             setCurrentJobId(null);
+            alert("Hata: " + (error as any).message); // Ekrana da basalım
         }
     };
     
@@ -404,6 +449,7 @@ const InputScreen: React.FC = () => {
                             <StatusDisplay
                                 status={jobStatus}
                                 jobId={currentJobId!}
+                                resultUrl={generatedLogoUrl}
                                 onTap={handleTapResult}
                                 onRetry={handleRetry}
                             />
@@ -460,12 +506,11 @@ const InputScreen: React.FC = () => {
                     </ScrollView>
 
                     <View style={styles.footerContainer}>
-
                         <TouchableOpacity 
                             onPress={handleCreateLogo} 
-                            style={[styles.createButtonWrapper, (jobStatus === 'processing' || jobStatus === 'done') && styles.createButtonDisabled]}
+                            style={[styles.createButtonWrapper, (jobStatus === 'processing') && styles.createButtonDisabled]}
                             activeOpacity={0.8}
-                            disabled={jobStatus === 'processing' || jobStatus === 'done' || !user}
+                            disabled={jobStatus === 'processing' || !user}
                         >
                             <LinearGradient
                                 colors={['#943DFF', '#2938DC']} 

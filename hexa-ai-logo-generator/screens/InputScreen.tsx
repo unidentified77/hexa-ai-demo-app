@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import Svg, { Path } from 'react-native-svg';
 
-import { styles, STATUS_HEIGHT } from './InputScreen.styles'; 
+import { styles, STATUS_HEIGHT } from './InputScreen.styles';
 
 import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
 import { 

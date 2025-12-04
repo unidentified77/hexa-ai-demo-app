@@ -11,6 +11,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, RouteProp, useRoute, NavigationProp } from '@react-navigation/native';
+import { styles } from './OutputScreen.styles';
+import Svg, { Path } from 'react-native-svg';
 
 // --- FIREBASE IMPORTS ---
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
@@ -43,6 +45,12 @@ const INITIAL_JOB_DATA: JobData = {
     status: 'processing', 
 };
 
+const CopyIcon = () => (
+  <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
+      <Path d="M10.6666 8.60004V11.4C10.6666 13.7334 9.73325 14.6667 7.39992 14.6667H4.59992C2.26659 14.6667 1.33325 13.7334 1.33325 11.4V8.60004C1.33325 6.26671 2.26659 5.33337 4.59992 5.33337H7.39992C9.73325 5.33337 10.6666 6.26671 10.6666 8.60004Z" stroke="#A1A1AA" strokeLinecap="round" strokeLinejoin="round"/>
+      <Path d="M14.6666 4.60004V7.40004C14.6666 9.73337 13.7333 10.6667 11.3999 10.6667H10.6666V8.60004C10.6666 6.26671 9.73325 5.33337 7.39992 5.33337H5.33325V4.60004C5.33325 2.26671 6.26659 1.33337 8.59992 1.33337H11.3999C13.7333 1.33337 14.6666 2.26671 14.6666 4.60004Z" stroke="#A1A1AA" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
 
 const OutputScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -150,8 +158,9 @@ const OutputScreen: React.FC = () => {
                         <View style={styles.promptHeader}>
                             <Text style={styles.promptHeaderTitle}>Prompt</Text>
                             <TouchableOpacity onPress={handleCopyPrompt} style={styles.copyButton}>
-                                <Text style={styles.copyIcon}>❐ Copy</Text>
-                            </TouchableOpacity>
+                            <CopyIcon /> 
+                            <Text style={styles.copyIcon}>Copy</Text> 
+                        </TouchableOpacity>
                         </View>
 
                         <Text style={styles.promptText}>{jobData.prompt}</Text>
@@ -171,116 +180,5 @@ const OutputScreen: React.FC = () => {
   );
 };
 
-// --- STYLES ---
-const styles = StyleSheet.create({
-  fullScreenContainer: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  headerBar: {
-    paddingHorizontal: 24, 
-    paddingTop: 10,
-    paddingBottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 17, 
-    fontWeight: '800', 
-    color: '#fafafa', 
-  },
-  closeButton: {
-      padding: 5,
-  },
-  closeIcon: {
-      fontSize: 24,
-      color: '#fafafa',
-  },
-  scrollContent: {
-    paddingHorizontal: 24, 
-    paddingBottom: 30, 
-    alignItems: 'center', 
-    flexGrow: 1, 
-    justifyContent: 'flex-start',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 400, 
-  },
-  loadingText: {
-      marginTop: 15,
-      color: '#943dff',
-      fontSize: 16,
-      fontWeight: '600',
-  },
-  logoContainer: {
-    width: '100%',
-    aspectRatio: 1, 
-    backgroundColor: '#FFFFFF', 
-    borderRadius: 16,
-    marginBottom: 20,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoImage: {
-      width: '90%',
-      height: '90%',
-  },
-  promptCard: {
-    width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)', 
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-  },
-  promptHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  promptHeaderTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#fafafa',
-  },
-  copyButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-  },
-  copyIcon: {
-      fontSize: 14,
-      color: '#943dff', 
-      fontWeight: '600',
-  },
-  promptText: {
-    fontSize: 14,
-    color: '#fafafa',
-    marginBottom: 12,
-  },
-  styleChip: {
-    alignSelf: 'flex-start', 
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  styleChipText: {
-    fontSize: 12,
-    color: '#fafafa',
-    fontWeight: '500',
-  },
-  jobInfo: {
-      fontSize: 10,
-      color: '#71717a',
-      marginTop: 20,
-  }
-});
 
 export default OutputScreen;

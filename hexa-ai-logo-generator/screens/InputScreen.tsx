@@ -16,7 +16,7 @@ import { useNavigation, NavigationProp, useIsFocused } from '@react-navigation/n
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import Svg, { Path } from 'react-native-svg';
-
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { styles, STATUS_HEIGHT } from './InputScreen.styles';
 
 import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
@@ -31,6 +31,7 @@ import {
 import { db, auth, initialAuthToken, appId } from '../utils/firebase'; 
 
 const bgImage = require('../assets/images/back_gradient.png');
+const functions = getFunctions();
 
 type RootStackParamList = {
     Input: undefined;
@@ -406,12 +407,41 @@ const InputScreen: React.FC = () => {
             alert("Hata: " + (error as any).message); // Ekrana da basalım
         }
     };
-    
+
+    const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false); 
+
     const handleTapResult = (jobId: string) => navigation.navigate('Output', { jobId });
     const handleRetry = () => handleCreateLogo();
-    const handleSurpriseMe = () => setPrompt("A dynamic blue lion head logo in bold geometric style.");
     const handleStyleSelect = (id: string) => setSelectedStyleId(id);
     const handleViewHistory = () => navigation.navigate('History');
+    const handleSurpriseMe = async () => {
+      // Eğer zaten üretim yapıyorsa tekrar basamasın
+      if (isGeneratingPrompt) return;
+  
+      try {
+          setIsGeneratingPrompt(true); // Yükleniyor başlat
+          setPrompt(""); // Kutuyu temizle (opsiyonel)
+  
+          // Backend'deki fonksiyona bağlanıyoruz
+          // 'generate_creative_prompt' ismi main.py'daki fonksiyon adıyla AYNI olmalı
+          const generatePromptFn = httpsCallable(functions, 'generate_creative_prompt');
+  
+          // Fonksiyonu çağır ve cevabı bekle
+          const result = await generatePromptFn(); 
+          
+          // Gelen veriyi al
+          const data = result.data as { prompt: string };
+          
+          // Text inputa yaz
+          setPrompt(data.prompt);
+  
+      } catch (error) {
+          console.error("Surprise Me Error:", error);
+          setPrompt("A minimalist eagle logo with golden ratio circles."); // Hata olursa yedek prompt
+      } finally {
+          setIsGeneratingPrompt(false); // Yükleniyor bitir
+      }
+  };
     
     const isStatusActive = jobStatus !== 'idle';
     const showStatusDisplay = isStatusActive && currentJobId; 
@@ -462,9 +492,19 @@ const InputScreen: React.FC = () => {
                     >
                         <View style={[styles.sectionHeader, showStatusDisplay && {marginTop: 0}]}> 
                             <Text style={styles.sectionTitle}>Enter Your Prompt</Text>
-                            <TouchableOpacity onPress={handleSurpriseMe} style={styles.surpriseChipContainer}>
-                                <Text style={styles.surpriseIcon}>🎲</Text> 
-                                <Text style={styles.surpriseText}>Surprise me</Text>
+                            <TouchableOpacity 
+                                onPress={handleSurpriseMe} 
+                                style={[styles.surpriseChipContainer, isGeneratingPrompt && { opacity: 0.6 }]}
+                                disabled={isGeneratingPrompt}
+                            >
+                                {isGeneratingPrompt ? (
+                                    <ActivityIndicator size="small" color="#943dff" style={{ marginRight: 6 }} />
+                                ) : (
+                                    <Text style={styles.surpriseIcon}>🎲</Text> 
+                                )}
+                                <Text style={styles.surpriseText}>
+                                    {isGeneratingPrompt ? "Thinking..." : "Surprise me"}
+                                </Text>
                             </TouchableOpacity>
                         </View>
 

@@ -3,3 +3,4 @@ functions-framework
 firebase-functions
 requests
 Pillow
+groq

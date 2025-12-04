@@ -10,6 +10,7 @@ import {
   Dimensions,
   ImageBackground,
   StatusBar,
+  ImageSourcePropType
 } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp, useIsFocused } from '@react-navigation/native'; 
@@ -42,13 +43,14 @@ type RootStackParamList = {
 type GenerationStatus = 'idle' | 'processing' | 'done' | 'failed';
 
 // --- MOCK VERİLER ve Bileşenler ---
+// Not: Bu görsellerin assets/images klasöründe olduğundan emin olun.
 const LOGO_STYLES = [
-  { id: 'none', name: 'No Style', icon: '🚫'},
-  { id: 'monogram', name: 'Monogram', icon: '🔠'},
-  { id: 'abstract', name: 'Abstract', icon: '🌌'},
-  { id: 'mascot', name: 'Mascot', icon: '🐉'},
-  { id: 'minimal', name: 'Minimal', icon: '🔳'},
-  { id: 'vintage', name: 'Vintage', icon: '📜'},
+  { id: 'none', name: 'No Style', image: null }, // No Style için görsel yok, gradient kullanılacak
+  { id: 'monogram', name: 'Monogram', image: require('../assets/images/Monogram.png') },
+  { id: 'abstract', name: 'Abstract', image: require('../assets/images/Abstract.png') },
+  { id: 'mascot', name: 'Mascot', image: require('../assets/images/Mascot.png') },
+  { id: 'minimal', name: 'Minimal', image: require('../assets/images/Minimal.jpg') },
+  { id: 'vintage', name: 'Vintage', image: require('../assets/images/Vintage.avif') },
 ];
 
 interface StyleChipProps {
@@ -57,17 +59,57 @@ interface StyleChipProps {
   onSelect: (id: string) => void;
 }
 
-const StyleChip: React.FC<StyleChipProps> = ({ styleData, isSelected, onSelect }) => (
-  <TouchableOpacity 
-    style={[styles.chipContainer, isSelected && styles.chipSelected]}
-    onPress={() => onSelect(styleData.id)}
-  >
-    <View style={styles.chipIconBox}>
-        <Text style={styles.chipIcon}>{styleData.icon}</Text>
-    </View>
-    <Text style={styles.chipText}>{styleData.name}</Text>
-  </TouchableOpacity>
-);
+const StyleChip: React.FC<StyleChipProps> = ({ styleData, isSelected, onSelect }) => {
+  const isNoStyle = styleData.id === 'none';
+
+  return (
+    <TouchableOpacity 
+      style={styles.chipWrapper}
+      onPress={() => onSelect(styleData.id)}
+      activeOpacity={0.8}
+    >
+      {/* 1. GÖRSEL KUTUSU */}
+      <View style={styles.chipVisualContainer}>
+        {isNoStyle ? (
+            // --- NO STYLE KUTUSU ---
+            // Seçiliyse styles.selectedBorder, değilse styles.unselectedNoStyleBorder
+            <View style={[
+                styles.noStyleBoxBase, 
+                isSelected ? styles.selectedBorder : styles.unselectedNoStyleBorder
+            ]}>
+                <LinearGradient
+                    colors={['rgba(41, 56, 220, 0.25)', 'rgba(41, 56, 220, 0.25)']}
+                    style={styles.noStyleGradient}
+                >
+                    <View style={styles.noStyleInnerIcon}>
+                        <Text style={{fontSize: 24}}>🚫</Text>
+                    </View>
+                </LinearGradient>
+            </View>
+        ) : (
+            // --- RESİMLİ KUTU ---
+            // Resmi sarmalayan View'a border (çerçeve) veriyoruz
+            <View style={[
+                styles.imageWrapper, 
+                isSelected && styles.selectedBorder // Sadece seçiliyse border ekle
+            ]}>
+                <ImageBackground
+                    source={styleData.image as ImageSourcePropType}
+                    style={styles.styleImageBox}
+                    // Resim kenarları border'ın içinde kalsın diye radius ekliyoruz
+                    imageStyle={styles.styleImageRadius} 
+                />
+            </View>
+        )}
+      </View>
+
+      {/* 2. METİN ALANI (Seçili olma durumuna göre stil değişir) */}
+      <Text style={isSelected ? styles.chipTextSelected : styles.chipTextUnselected}>
+        {styleData.name}
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
 
 // --- StatusDisplay BİLEŞENİ ---
@@ -413,7 +455,7 @@ const InputScreen: React.FC = () => {
                         locations={[0.2459, 1]} 
                         start={{ x: 1, y: 0 }}
                         end={{ x: 0, y: 0 }}
-                        style={styles.createButton} // Bu stilde 'row' olduğu için yan yana gelecekler
+                        style={styles.createButton} 
                     >
                         {/* Önce Yazı */}
                         <Text style={styles.createButtonText}>
@@ -598,38 +640,94 @@ const styles = StyleSheet.create({
     gap: 12, 
     marginBottom: 30, 
   },
-  chipContainer: {
-    width: 90, 
-    height: 110, 
-    marginRight: 12,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 8,
+  
+  // --- YENİ STYLE CHIP STYLES ---
+  chipWrapper: {
+      alignItems: 'center',
+      marginRight: 12,
   },
-  chipSelected: {
-    borderWidth: 2,
-    borderColor: '#943dff', 
+  chipVisualContainer: {
+      width: 90,
+      height: 90,
+      marginBottom: 8,
+      // Gölge efekti
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
   },
-  chipIconBox: {
-      width: 60,
-      height: 60,
-      borderRadius: 12,
-      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+
+  // -- SEÇİLİ OLMA DURUMU (Highlights) --
+  selectedBorder: {
+      borderColor: '#943DFF', // Neon Mor
+      borderWidth: 3,         // Kalın Çerçeve
+  },
+  unselectedNoStyleBorder: {
+      borderColor: '#FAFAFA', // Varsayılan Beyaz
+      borderWidth: 2,
+  },
+
+  // No Style İçin Temel Kutu
+  noStyleBoxBase: {
+      width: '100%',
+      height: '100%',
+      borderRadius: 16,
+      backgroundColor: '#27272A',
+      overflow: 'hidden',
+  },
+  noStyleGradient: {
+      flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 8,
   },
-  chipIcon: {
-      fontSize: 28,
+  noStyleInnerIcon: {
+      justifyContent: 'center',
+      alignItems: 'center',
   },
-  chipText: {
-    fontSize: 13,
-    color: '#fafafa',
-    fontWeight: '500',
-    textAlign: 'center',
+
+  // Resimli Kutular İçin Sarmalayıcı
+  imageWrapper: {
+      width: '100%',
+      height: '100%',
+      borderRadius: 14, 
+      overflow: 'hidden', 
+      borderWidth: 0, // Seçili değilken border yok
   },
+  styleImageBox: {
+      width: '100%',
+      height: '100%',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+  },
+  styleImageRadius: {
+      borderRadius: 14, 
+  },
+
+  // Seçili Metin Stili
+  chipTextSelected: {
+      color: '#FAFAFA',
+      textAlign: 'center',
+      fontFamily: 'Manrope-Regular', 
+      fontSize: 13,
+      fontWeight: '700', 
+      lineHeight: 18,
+      letterSpacing: -0.13,
+  },
+  // Seçili Olmayan Metin Stili
+  chipTextUnselected: {
+      color: '#71717A',
+      textAlign: 'center',
+      fontFamily: 'Manrope-Regular',
+      fontSize: 13,
+      fontWeight: '400',
+      lineHeight: 18,
+  },
+  // ---------------------------------
+
   createButtonWrapper: {
       borderRadius: 50, 
       overflow: 'hidden',

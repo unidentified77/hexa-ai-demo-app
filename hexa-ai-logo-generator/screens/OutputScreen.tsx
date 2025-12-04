@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
-  StyleSheet,  
+  Share,
   TouchableOpacity,
   Image,
   ScrollView,
@@ -17,10 +17,9 @@ import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
 
 // --- FIREBASE IMPORTS ---
-import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore'; 
-
-import { app, db, auth, appId } from '../utils/firebase'; 
+import { db, auth, appId } from '../utils/firebase'; 
 // --- FIREBASE IMPORTS ---
 
 const bgImage = require('../assets/images/back_gradient.png'); 
@@ -56,12 +55,18 @@ const CopyIcon = () => (
   </Svg>
 );
 
+const ShareIcon = () => (
+  <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+    <Path d="M4 12V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V12" stroke="#FAFAFA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M16 6L12 2L8 6" stroke="#FAFAFA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M12 2V15" stroke="#FAFAFA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
 const OutputScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<OutputScreenRouteProp>();
-  
   const { jobId } = route.params;
-
   const [jobData, setJobData] = useState<JobData>(INITIAL_JOB_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
@@ -77,18 +82,15 @@ const OutputScreen: React.FC = () => {
 
   // 2. Firestore Listener
   useEffect(() => {
-    // Kullanıcı ve jobId hazırsa dinlemeyi başlat
     if (!user || !jobId) return; 
 
     const userId = user.uid;
     const jobRef = doc(db, `artifacts/${appId}/users/${userId}/jobs`, jobId);
     
-    // Output ekranında sadece veriyi çekiyoruz (onSnapshot ile real-time)
     const unsubscribe = onSnapshot(jobRef, (docSnapshot) => {
         if (docSnapshot.exists()) {
             const data = docSnapshot.data() as JobData;
             
-            // Eğer veri geldiyse ve 'done' ise yüklenmeyi bitir
             if (data.status === 'done' || data.status === 'failed') {
                 setJobData(data);
                 setIsLoading(false);
@@ -110,9 +112,22 @@ const OutputScreen: React.FC = () => {
 
   const handleCopyPrompt = async () => {
     await Clipboard.setStringAsync(jobData.prompt);
-    console.log("Prompt kopyalandı:", jobData.prompt);
+    // Kullanıcıya geri bildirim veya debugging için faydalı, kalabilir.
+    console.log("Prompt kopyalandı:", jobData.prompt); 
   };
   
+  const handleShare = async () => {
+    try {
+        await Share.share({
+            message: `Check out my new AI logo generated with Hexa! prompt: ${jobData.prompt}`,
+            url: jobData.logoUrl,
+            title: 'My AI Logo'
+        });
+    } catch (error) {
+        console.error("An error has occurred:", error);
+    }
+};
+
   const handleClose = () => {
       navigation.goBack();
   };
@@ -120,7 +135,7 @@ const OutputScreen: React.FC = () => {
   const isFailed = jobData.status === 'failed';
 
   return (
-    <ImageBackground // <-- LinearGradient yerine ImageBackground kullanıldı
+    <ImageBackground
       source={bgImage} 
       resizeMode="cover"
       style={styles.fullScreenContainer}
@@ -161,9 +176,9 @@ const OutputScreen: React.FC = () => {
                     {/* 3. Prompt Bilgisi Kartı */}
                     <LinearGradient
                         colors={['rgba(148, 61, 255, 0.05)', 'rgba(41, 56, 220, 0.05)']}
-                        start={{ x: 1, y: 0 }} // 270 derece (Sağdan)
-                        end={{ x: 0, y: 0 }}   // (Sola)
-                        locations={[0.2459, 1]} // %24.59 ve %100 durakları
+                        start={{ x: 1, y: 0 }}
+                        end={{ x: 0, y: 0 }}
+                        locations={[0.2459, 1]} 
                         style={styles.promptCard}
                     >
                         <View style={styles.promptHeader}>
@@ -180,13 +195,29 @@ const OutputScreen: React.FC = () => {
                     </LinearGradient>
                 </>
             )}
-            
-            <Text style={styles.jobInfo}>Job ID: {jobId}</Text>
+            <TouchableOpacity 
+                onPress={handleShare} 
+                style={styles.shareButtonWrapper}
+                activeOpacity={0.8}
+            >
+                <LinearGradient
+                    colors={['#943DFF', '#2938DC']} 
+                    start={{ x: 1, y: 0 }}
+                    end={{ x: 0, y: 0 }}
+                    locations={[0.2459, 1]}
+                    style={styles.shareButtonGradient}
+                >
+                    <ShareIcon />
+                    <Text style={styles.shareText}>Share & Save</Text>
+                </LinearGradient>
+            </TouchableOpacity>
+
+            <Text style={styles.jobInfo}>Ref: {jobId}</Text>
 
         </ScrollView>
       </SafeAreaView>
-    </ImageBackground>  );
+    </ImageBackground>  
+  );
 };
-
 
 export default OutputScreen;

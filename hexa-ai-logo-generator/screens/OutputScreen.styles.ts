@@ -3,18 +3,19 @@ import { StyleSheet } from 'react-native';
 export const PADDING_HORIZONTAL = 24;
 
 export const COLORS = {
-        DARK_1000: '#09090B', // InputScreen'den alınmıştır.
-        DARK_900: '#1C1C1E',
-        DARK_500: '#71717A',
-        WHITE: '#FAFAFA',
-        PRIMARY_PURPLE: '#943dff',
-        BORDER: '#A1A1AA',
-    };
+    DARK_1000: '#09090B',
+    DARK_900: '#1C1C1E',
+    DARK_500: '#71717A',
+    WHITE: '#FAFAFA',
+    PRIMARY_PURPLE: '#943dff',
+    BORDER: '#A1A1AA',
+};
 
 export const styles = StyleSheet.create({
     fullScreenContainer: { flex: 1, backgroundColor: COLORS.DARK_1000 },
     backgroundImage: { flex: 1, width: '100%', height: '100%' },
     safeArea: { flex: 1 },
+    
     headerBar: {
         paddingHorizontal: 24,
         paddingTop: 10,
@@ -24,12 +25,12 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerTitle: {
-        marginTop:12,
-        fontFamily:'Manrope-Extrabold',
+        marginTop: 12,
+        fontFamily: 'Manrope-ExtraBold', // Yazım düzeltildi (Extrabold -> ExtraBold)
         fontSize: 22,
         fontWeight: '800',
         color: '#fafafa',
-        lineHeight:28
+        lineHeight: 28
     },
     closeButton: {
         padding: 5,
@@ -38,6 +39,7 @@ export const styles = StyleSheet.create({
         fontSize: 24,
         color: '#fafafa',
     },
+    
     scrollContent: {
         paddingHorizontal: 24,
         paddingBottom: 30,
@@ -45,6 +47,7 @@ export const styles = StyleSheet.create({
         flexGrow: 1,
         justifyContent: 'flex-start',
     },
+    
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -57,6 +60,7 @@ export const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
+    
     logoContainer: {
         width: '100%',
         aspectRatio: 1,
@@ -73,6 +77,7 @@ export const styles = StyleSheet.create({
         borderRadius: 16,
         backgroundColor: '#E1E1E1', 
     },
+    
     promptCard: {
         width: '100%', 
         alignSelf: 'stretch',
@@ -117,8 +122,9 @@ export const styles = StyleSheet.create({
         marginBottom: 12,
         fontWeight: '400',
         fontFamily: 'Manrope-Regular',
-        lineHeight: 21,
+        lineHeight: 24, // DÜZELTME: Okunabilirlik ve taşmayı önlemek için artırıldı
     },
+    
     styleChip: {
         paddingVertical: 4,
         paddingHorizontal: 8,
@@ -137,11 +143,42 @@ export const styles = StyleSheet.create({
         fontFamily: 'Manrope-Regular',
         height: 16
     },
+    
     jobInfo: {
         fontSize: 10,
-        color: 'rgba(255, 255, 255, 0.2)', // Çok silik, hayalet gibi görünür
+        color: 'rgba(255, 255, 255, 0.2)', 
         marginTop: 30,
-        textAlign: 'center', // Ortalar
+        textAlign: 'center',
         fontFamily: 'Manrope-Regular',
-    }
+    },
+    
+    shareButtonWrapper: {
+        marginTop: 20,
+        borderRadius: 30,
+        overflow: 'hidden', 
+        alignSelf: 'center', 
+        shadowColor: "#943dff",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+        elevation: 8,
+    },
+    shareButtonGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14, 
+        paddingHorizontal: 32,
+        gap: 8,
+    },
+    shareIcon: {
+        fontSize: 18, 
+        color: '#FAFAFA',
+    },
+    shareText: {
+        fontSize: 16,
+        fontWeight: '800', 
+        color: '#FAFAFA',
+        fontFamily: 'Manrope-ExtraBold',
+    },
 });

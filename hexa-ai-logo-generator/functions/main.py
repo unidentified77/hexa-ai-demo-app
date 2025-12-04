@@ -112,8 +112,8 @@ def process_generation_job(event: firestore_fn.Event[firestore_fn.DocumentSnapsh
         blob.make_public()
         image_url = blob.public_url
 
-        # 🔥 --- 3. RANDOM %40 FAIL TESTİ --- 🔥
-        if random.random() < 0.40:
+        # 🔥 --- 3. RANDOM %20 FAIL TESTİ --- 🔥
+        if random.random() < 0.20:
             print("🎯 RANDOM FAIL tetiklendi (%40 ihtimal)")
             job_ref.update({
                 "status": "failed",

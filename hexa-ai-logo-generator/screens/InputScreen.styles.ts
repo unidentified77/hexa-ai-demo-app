@@ -52,21 +52,14 @@ export const styles = StyleSheet.create({
     // --- SAĞ KUTULAR ---
     rightBoxProcessingGradient: { flex: 1, height: 70, justifyContent: 'center', paddingHorizontal: 12, gap: 4, backgroundColor: '#27272A', borderTopRightRadius: 16, borderBottomRightRadius: 16, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 },
 
-    rightBoxDoneGradient: { flex: 1, height: 70, paddingHorizontal: 12, gap: 4, justifyContent: 'center',borderTopRightRadius: 16, borderBottomRightRadius: 16, borderTopLeftRadius: 0, borderBottomLeftRadius: 0,},
+    rightBoxDoneGradient: { flex: 1, height: 70, paddingHorizontal: 12, gap: 4, justifyContent: 'center', borderTopRightRadius: 16, borderBottomRightRadius: 16, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 },
     
-    rightBoxSolid: { flex: 1, height: 70, justifyContent: 'center', alignItems: 'flex-start', paddingHorizontal: 12, gap: 4, borderTopRightRadius: 16, borderBottomRightRadius: 16, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 },
-
     // Failed Sağ Kutu
     rightBoxFailed: {
         flex: 1, height: 70, paddingHorizontal: 12, gap: 4,
         justifyContent: 'center', alignItems: 'flex-start',
         borderTopRightRadius: 16, borderBottomRightRadius: 16, borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
         backgroundColor: COLORS.ERROR_RED
-    },
-
-    // Failed Sağ Kutu
-    rightBoxDone: {
-
     },
 
     // --- FAILED OVERLAY & ICON ---
@@ -85,9 +78,35 @@ export const styles = StyleSheet.create({
     // --- FORM & CHIPS ---
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, marginTop: 20 },
     sectionTitle: { color: COLORS.WHITE, textAlign: 'left', fontFamily: 'Manrope-ExtraBold', fontSize: 20, fontWeight: '800', lineHeight: 25 },
-    surpriseChipContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-    surpriseIcon: { color: COLORS.WHITE, fontFamily: 'Manrope-Regular', fontSize: 13,fontWeight: '400', lineHeight: 18, marginRight: 8, height:18 },
-    surpriseText: {color: COLORS.WHITE, fontFamily: 'Manrope-Regular', fontSize: 13,fontWeight: '400', lineHeight: 18, height:18 },    
+    
+    surpriseChipContainer: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        justifyContent: 'center', // Ortala
+        paddingHorizontal: 10, 
+        paddingVertical: 5, 
+        borderRadius: 20, 
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        height: 32, // <--- KAYMAYI ÖNLEYEN SABİT YÜKSEKLİK
+    },
+    surpriseIcon: { 
+        color: COLORS.WHITE, 
+        fontFamily: 'Manrope-Regular', 
+        fontSize: 13, 
+        fontWeight: '400', 
+        lineHeight: 18, 
+        marginRight: 6, // ActivityIndicator ile hizalı olması için
+        height: 18 
+    },
+    surpriseText: { 
+        color: COLORS.WHITE, 
+        fontFamily: 'Manrope-Regular', 
+        fontSize: 13, 
+        fontWeight: '400', 
+        lineHeight: 18, 
+        height: 18 
+    }, 
+    
     textAreaContainer: { backgroundColor: 'rgba(255, 255, 255, 0.08)', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, height: 150, marginBottom: 30 },
     textInput: { flex: 1, textAlignVertical: 'top', color: COLORS.WHITE, fontFamily: 'Manrope-Regular', fontSize: 16, fontWeight: '400', lineHeight: 21 },
     charCount: { fontSize: 12, color: COLORS.DARK_500, textAlign: 'right', marginTop: 5 },
@@ -111,7 +130,7 @@ export const styles = StyleSheet.create({
     createButtonWrapper: { borderRadius: 50, overflow: 'hidden' },
     createButton: { height: BUTTON_HEIGHT, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, gap: 8 },
     createButtonText: { color: COLORS.WHITE, textAlign: 'center', fontFamily: 'Manrope-ExtraBold', fontSize: 17, fontWeight: '800', lineHeight: 22, letterSpacing: -0.17 },
-    createButtonDisabled: { opacity: 1 },
+    createButtonDisabled: { opacity: 0.5 }, // Disabled durumunda butonun soluklaşması daha iyi bir UX sağlar
 
     // YENİ: Resim stili
     generatedLogoImage: { width: '100%', height: '100%' },

@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Asset } from 'expo-asset'; // Resim ön yükleme için Expo Asset
-import * as Font from 'expo-font'; // Font ön yükleme için Expo Font
+import { Asset } from 'expo-asset'; 
+import * as Font from 'expo-font'; 
 
 import InputScreen from './screens/InputScreen';
 import OutputScreen from './screens/OutputScreen';
@@ -29,26 +29,27 @@ async function loadAssets() {
 export default function App() {
   const [isLoadingComplete, setIsLoadingComplete] = useState(false);
 
-    useEffect(() => {
-      async function loadApp() {
-        try {
-          await loadAssets();
-            } catch (e) {
-                console.warn(e);
-              } finally {
-                  setIsLoadingComplete(true);
-                }
+  useEffect(() => {
+    async function loadApp() {
+      try {
+        await loadAssets();
+      } catch (e) {
+        // Kritik asset yükleme hatası. İnceleyen kişinin hatayı görmesi için bırakıldı.
+        console.warn(e);
+      } finally {
+        setIsLoadingComplete(true);
       }
-      loadApp();
-    }, []);
+    }
+    loadApp();
+  }, []);
 
   if (!isLoadingComplete) {
-      return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#09090B' }}>
-          <ActivityIndicator size="large" color="#943dff" />
-          <Text style={{color: '#fafafa', marginTop: 10}}>Loading assets...</Text>
-        </View>
-      );
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#09090B' }}>
+        <ActivityIndicator size="large" color="#943dff" />
+        <Text style={{color: '#fafafa', marginTop: 10}}>Loading assets...</Text>
+      </View>
+    );
   }
 
   return (

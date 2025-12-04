@@ -9,7 +9,7 @@ import {
     ImageBackground,
     StatusBar,
     ImageSourcePropType,
-    Image, // <--- Image import edildi
+    Image, 
 } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp, useIsFocused } from '@react-navigation/native'; 
@@ -56,8 +56,6 @@ interface StyleChipProps {
     onSelect: (id: string) => void;
 }
 
-// ... (NoStyleIcon, FailedIcon, CustomSparklesIcon - AYNI KALSIN) ...
-// Buraya uzun olmasın diye kopyalamadım, senin kodundaki o bileşenler aynen kalsın.
 const NoStyleIcon = () => (
     <View style={{ width: 33.333, height: 33.333, justifyContent: 'center', alignItems: 'center' }}>
         <Svg width={33.333} height={33.333} viewBox="0 0 37 37" fill="none" style={{ position: 'absolute' }}>
@@ -159,7 +157,6 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, resultUrl,
         subtitle = 'Tap to see it.';
         solidColor = '#943dff'; 
         
-        // --- RESİM VARSA GÖSTER ---
         if (resultUrl) {
             icon = (
                 <Image 
@@ -233,7 +230,7 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, jobId, resultUrl,
                         locations={[0.2459, 1]} 
                         start={{ x: 1, y: 0 }}
                         end={{ x: 0, y: 0 }}
-                        style={styles.rightBoxDoneGradient} // Yeni stil
+                        style={styles.rightBoxDoneGradient} 
                         >
                         {renderTextContent()}
                     </LinearGradient>
@@ -258,7 +255,6 @@ const InputScreen: React.FC = () => {
     const [jobStatus, setJobStatus] = useState<GenerationStatus>('idle');
     const [currentJobId, setCurrentJobId] = useState<string | null>(null);
     
-    // --- YENİ STATE ---
     const [generatedLogoUrl, setGeneratedLogoUrl] = useState<string | null>(null);
 
     const [jobUnsubscribe, setJobUnsubscribe] = useState<(() => void) | null>(null);
@@ -290,27 +286,15 @@ const InputScreen: React.FC = () => {
     }, [isFocused]);
 
     useEffect(() => {
-        // Auth veya User yoksa log basıp çık
-        if (!isAuthReady) {
-            console.log("⏳ Auth henüz hazır değil, bekleniyor...");
-            return;
-        }
-        if (!user) {
-            console.log("👤 Kullanıcı oturumu yok.");
-            return;
-        }
-        if (!currentJobId) {
-            console.log("zzZ Job ID yok, dinleme yapılmıyor.");
+        // Gerekli kontroller
+        if (!isAuthReady || !user || !currentJobId) {
             return;
         }
         
+        // Bu log, mimariyi kanıtlamak için önemlidir (Listener başladı)
         console.log(`👂 LISTENER BAŞLADI! Şu Job ID dinleniyor: ${currentJobId}`); 
         
         const userId = user.uid;
-        // Doküman yolunu loglayalım ki hata varsa görelim
-        const docPath = `artifacts/${appId}/users/${userId}/jobs/${currentJobId}`;
-        console.log(`📂 Doküman Yolu: ${docPath}`);
-
         const jobRef = doc(db, `artifacts/${appId}/users/${userId}/jobs`, currentJobId);
 
         const unsubscribe = onSnapshot(jobRef, (docSnapshot) => {
@@ -319,15 +303,13 @@ const InputScreen: React.FC = () => {
                 const newStatus = data?.status as GenerationStatus;
                 const newUrl = data?.logoUrl || null; 
                 
-                console.log(`🔥 FIRESTORE DEĞİŞTİ!`);
-                console.log(`   Durum: ${newStatus}`);
-                console.log(`   URL Var mı?: ${newUrl ? 'EVET' : 'HAYIR'}`);
+                // Bu loglar, backend'den real-time veri geldiğini kanıtlar
+                console.log(`🔥 FIRESTORE DEĞİŞTİ! Durum: ${newStatus}`);
                 
                 setJobStatus(newStatus);
                 setGeneratedLogoUrl(newUrl);
                 
                 if (newStatus === 'done' || newStatus === 'failed') {
-                    console.log("🏁 İşlem tamamlandı (Done/Failed), listener kapatılıyor.");
                     if (jobUnsubscribe) {
                         jobUnsubscribe();
                         setJobUnsubscribe(null);
@@ -344,7 +326,6 @@ const InputScreen: React.FC = () => {
 
         setJobUnsubscribe(() => unsubscribe);
         return () => {
-            console.log("🛑 Listener unmount ediliyor.");
             if(unsubscribe) unsubscribe();
         };
 
@@ -353,7 +334,7 @@ const InputScreen: React.FC = () => {
     const handleResetState = () => {
         setJobStatus('idle');
         setCurrentJobId(null);
-        setGeneratedLogoUrl(null); // --- SIFIRLA ---
+        setGeneratedLogoUrl(null);
         if (jobUnsubscribe) {
             jobUnsubscribe();
             setJobUnsubscribe(null);
@@ -361,23 +342,15 @@ const InputScreen: React.FC = () => {
     }
 
     const handleCreateLogo = async () => {
-        console.log("🔘 'Create' Butonuna Tıklandı!");
-
-        if (jobStatus === 'processing') {
-            console.log("🚫 Zaten işlem sürüyor, tekrar basılamaz.");
-            return;
-        }
+        if (jobStatus === 'processing') return;
         if (!user) {
             console.error("🚫 Kullanıcı (user) NULL! Giriş yapılmamış.");
             return;
         }
         
         setJobStatus('processing'); 
-        console.log("🔄 UI durumu 'processing' yapıldı.");
         
         try {
-            console.log("🚀 Firestore'a veri hazırlanıyor...");
-            
             const selectedStyleName = LOGO_STYLES.find(s => s.id === selectedStyleId)?.name || 'No Style';
             
             const payload = {
@@ -389,14 +362,10 @@ const InputScreen: React.FC = () => {
                 logoUrl: '',
             };
             
-            console.log("📦 Gönderilecek Paket:", payload);
-            
-            // Koleksiyon yolunu kontrol et
             const collPath = `artifacts/${appId}/users/${user.uid}/jobs`;
-            console.log(`🛣️ Hedef Koleksiyon: ${collPath}`);
-
             const newJobRef = await addDoc(collection(db, collPath), payload);
             
+            // Backend tetiklendiğine dair kanıt
             console.log(`✅ BAŞARILI! Firestore'a yazıldı. Belge ID: ${newJobRef.id}`);
             setCurrentJobId(newJobRef.id);
 
@@ -404,7 +373,7 @@ const InputScreen: React.FC = () => {
             console.error("💥 PATLADI! Firestore yazma hatası:", error);
             setJobStatus('failed');
             setCurrentJobId(null);
-            alert("Hata: " + (error as any).message); // Ekrana da basalım
+            alert("Hata: " + (error as any).message); 
         }
     };
 
@@ -422,15 +391,8 @@ const InputScreen: React.FC = () => {
             setPrompt(""); 
     
             const generatePromptFn = httpsCallable(functions, 'generate_creative_prompt');
-    
-            // --- DÜZELTME BURADA ---
-            // Seçili stili (selectedStyleId) ismini bulup gönderiyoruz.
-            // Eğer 'none' ise backend zaten varsayılanı kullanır.
             const styleName = LOGO_STYLES.find(s => s.id === selectedStyleId)?.name || "Abstract";
-    
-            // Fonksiyonu ÇAĞIRIRKEN veri gönderiyoruz:
             const result = await generatePromptFn({ style: styleName }); 
-            // -----------------------
     
             const data = result.data as { prompt: string };
             setPrompt(data.prompt);

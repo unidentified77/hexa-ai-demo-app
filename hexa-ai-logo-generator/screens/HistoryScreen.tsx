@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
-  StyleSheet, 
   FlatList, 
   TouchableOpacity, 
   Image,  
@@ -12,16 +11,15 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { styles } from './HistoryScreen.styles';
+
 // Firebase Imports
-import { getAuth } from 'firebase/auth';
 import { 
     collection, 
     query, 
     orderBy, 
-    onSnapshot, 
-    getFirestore 
+    onSnapshot 
 } from 'firebase/firestore'; 
-import { app, db, auth, appId } from '../utils/firebase';
+import { db, auth, appId } from '../utils/firebase';
 
 const bgImage = require('../assets/images/back_gradient.png');
 
@@ -53,8 +51,10 @@ const HistoryScreen: React.FC = () => {
     const userId = user.uid;
     const jobsRef = collection(db, `artifacts/${appId}/users/${userId}/jobs`);
     
+    // Geçmişi tarihe göre sırala (En yeni en üstte)
     const q = query(jobsRef, orderBy('createdAt', 'desc'));
 
+    // Real-time listener
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const jobs: JobData[] = [];
       snapshot.forEach((doc) => {
@@ -71,6 +71,7 @@ const HistoryScreen: React.FC = () => {
       setHistoryData(jobs);
       setLoading(false);
     }, (error) => {
+      // Kritik hata logu (Case Study için kalmalı)
       console.error("History fetch error:", error);
       setLoading(false);
     });
@@ -86,9 +87,9 @@ const HistoryScreen: React.FC = () => {
     const isDone = item.status === 'done';
     const isFailed = item.status === 'failed';
     
-    let statusColor = '#71717a'; // Processing (Gri)
-    if (isDone) statusColor = '#943dff'; // Done (Mor)
-    if (isFailed) statusColor = '#EF4444'; // Failed (Kırmızı)
+    let statusColor = '#71717a';
+    if (isDone) statusColor = '#943dff';
+    if (isFailed) statusColor = '#EF4444';
 
     return (
       <TouchableOpacity 
@@ -123,7 +124,7 @@ const HistoryScreen: React.FC = () => {
   };
 
   return (
-    <ImageBackground // <-- LinearGradient yerine ImageBackground kullanıldı
+    <ImageBackground
       source={bgImage} 
       resizeMode="cover"
       style={styles.container}

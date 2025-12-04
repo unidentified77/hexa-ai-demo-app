@@ -9,6 +9,8 @@ import {
   SafeAreaView,
   ActivityIndicator, 
   Dimensions,
+  ImageBackground,
+  StatusBar,
 } from 'react-native';
 import { useNavigation, NavigationProp, useIsFocused } from '@react-navigation/native'; 
 import { LinearGradient } from 'expo-linear-gradient';
@@ -26,6 +28,9 @@ import {
 
 import { db, auth, initialAuthToken, appId } from '../utils/firebase'; 
 // --- FIREBASE IMPORTS SONU ---
+
+// --- GÖRSEL TANIMLAMASI ---
+const bgImage = require('../assets/images/back_gradient.png');
 
 type RootStackParamList = {
   Input: undefined;
@@ -267,7 +272,6 @@ const InputScreen: React.FC = () => {
   };
 
   const handleRetry = () => {
-    // Resetlemeden direkt başlat.
     handleCreateLogo();
   };
 
@@ -289,7 +293,7 @@ const InputScreen: React.FC = () => {
 
   if (!fontsLoaded || !isAuthReady) {
     return (
-        <View style={[styles.fullScreenContainer, {justifyContent: 'center', alignItems: 'center', backgroundColor: '#000'}]}>
+        <View style={[styles.mainContainer, {justifyContent: 'center', alignItems: 'center'}]}>
             <ActivityIndicator size="large" color="#943dff" />
             <Text style={{color: '#fafafa', marginTop: 10}}>
                 {!fontsLoaded ? "Loading fonts..." : "Authenticating..."}
@@ -299,117 +303,132 @@ const InputScreen: React.FC = () => {
   }
 
   return (
-    <LinearGradient
-      colors={['#1a1936', '#0e0e1b']} 
-      style={styles.fullScreenContainer}
-    >
-      <SafeAreaView style={styles.safeArea}>
-        
-        <View style={styles.headerBox}>
-          <Text style={styles.headerTitle}>AI Logo</Text>
-          <TouchableOpacity onPress={handleViewHistory} style={styles.historyButton}>
-              <Text style={styles.historyIcon}>📜</Text>
-          </TouchableOpacity>
-        </View>
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="light-content" />
+      
+      {/* Gradient PNG Arka Plan */}
+      <ImageBackground 
+        source={bgImage} 
+        resizeMode="cover" 
+        style={styles.backgroundImage}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          
+          <View style={styles.headerBox}>
+            <Text style={styles.headerTitle}>AI Logo</Text>
+            <TouchableOpacity onPress={handleViewHistory} style={styles.historyButton}>
+                <Text style={styles.historyIcon}>📜</Text>
+            </TouchableOpacity>
+          </View>
 
-        {showStatusDisplay && (
-            <View style={styles.fixedStatusContainer}>
-                <StatusDisplay
-                    status={jobStatus}
-                    jobId={currentJobId!}
-                    onTap={handleTapResult}
-                    onRetry={handleRetry}
-                />
-            </View>
-        )}
-
-        <ScrollView 
-            ref={scrollViewRef}
-            contentContainerStyle={[
-                styles.scrollContent,
-                showStatusDisplay && styles.scrollContentShifted 
-            ]}>
-              
-              <View style={[styles.sectionHeader, showStatusDisplay && {marginTop: 0}]}> 
-                  <Text style={styles.sectionTitle}>Enter Your Prompt</Text>
-                  <TouchableOpacity onPress={handleSurpriseMe} style={styles.surpriseChipContainer}>
-                      <Text style={styles.surpriseIcon}>🎲</Text> 
-                      <Text style={styles.surpriseText}>Surprise me</Text>
-                  </TouchableOpacity>
-              </View>
-
-              <View style={styles.textAreaContainer}>
-                  <TextInput
-                      style={styles.textInput}
-                      multiline
-                      value={prompt}
-                      onChangeText={setPrompt}
-                      maxLength={MAX_CHAR_COUNT}
-                      placeholder="A blue lion logo reading 'HEXA' in bold letters" 
-                      placeholderTextColor="#71717a"
-                      editable={jobStatus === 'idle' || jobStatus === 'failed'} 
+          {showStatusDisplay && (
+              <View style={styles.fixedStatusContainer}>
+                  <StatusDisplay
+                      status={jobStatus}
+                      jobId={currentJobId!}
+                      onTap={handleTapResult}
+                      onRetry={handleRetry}
                   />
-                  <Text style={styles.charCount}>
-                      {prompt.length}/{MAX_CHAR_COUNT}
-                  </Text>
               </View>
+          )}
 
-              <Text style={styles.sectionTitle}>Logo Styles</Text>
-              
-              <ScrollView 
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.styleGrid}
-              >
-                  {LOGO_STYLES.map((style) => (
-                      <StyleChip 
-                          key={style.id}
-                          styleData={style}
-                          isSelected={selectedStyleId === style.id}
-                          onSelect={handleStyleSelect}
-                      />
-                  ))}
-              </ScrollView>
+          <ScrollView 
+              ref={scrollViewRef}
+              contentContainerStyle={[
+                  styles.scrollContent,
+                  showStatusDisplay && styles.scrollContentShifted 
+              ]}>
+                
+                <View style={[styles.sectionHeader, showStatusDisplay && {marginTop: 0}]}> 
+                    <Text style={styles.sectionTitle}>Enter Your Prompt</Text>
+                    <TouchableOpacity onPress={handleSurpriseMe} style={styles.surpriseChipContainer}>
+                        <Text style={styles.surpriseIcon}>🎲</Text> 
+                        <Text style={styles.surpriseText}>Surprise me</Text>
+                    </TouchableOpacity>
+                </View>
 
-              <TouchableOpacity 
-                  onPress={handleCreateLogo} 
-                  style={[styles.createButtonWrapper, (jobStatus === 'processing' || jobStatus === 'done') && styles.createButtonDisabled]}
-                  activeOpacity={0.8}
-                  disabled={jobStatus === 'processing' || jobStatus === 'done' || !user}
-              >
-                  <LinearGradient
-                      colors={['#943dff', '#2938dc']} 
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.createButton}
-                  >
-                      <Text style={styles.createButtonText}>
-                        {jobStatus === 'processing' ? 'Processing...' : 'Create ✨'}
-                      </Text>
-                  </LinearGradient>
-              </TouchableOpacity>
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+                <View style={styles.textAreaContainer}>
+                    <TextInput
+                        style={styles.textInput}
+                        multiline
+                        value={prompt}
+                        onChangeText={setPrompt}
+                        maxLength={MAX_CHAR_COUNT}
+                        placeholder="A blue lion logo reading 'HEXA' in bold letters" 
+                        placeholderTextColor="#71717a"
+                        editable={jobStatus === 'idle' || jobStatus === 'failed'} 
+                    />
+                    <Text style={styles.charCount}>
+                        {prompt.length}/{MAX_CHAR_COUNT}
+                    </Text>
+                </View>
+
+                <Text style={styles.sectionTitle}>Logo Styles</Text>
+                
+                <ScrollView 
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.styleGrid}
+                >
+                    {LOGO_STYLES.map((style) => (
+                        <StyleChip 
+                            key={style.id}
+                            styleData={style}
+                            isSelected={selectedStyleId === style.id}
+                            onSelect={handleStyleSelect}
+                        />
+                    ))}
+                </ScrollView>
+
+                <TouchableOpacity 
+                    onPress={handleCreateLogo} 
+                    style={[styles.createButtonWrapper, (jobStatus === 'processing' || jobStatus === 'done') && styles.createButtonDisabled]}
+                    activeOpacity={0.8}
+                    disabled={jobStatus === 'processing' || jobStatus === 'done' || !user}
+                >
+                    <LinearGradient
+                        colors={['#943dff', '#2938dc']} 
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.createButton}
+                    >
+                        <Text style={styles.createButtonText}>
+                          {jobStatus === 'processing' ? 'Processing...' : 'Create ✨'}
+                        </Text>
+                    </LinearGradient>
+                </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
+      </ImageBackground>
+    </View>
   );
 };
 
 const STATUS_HEIGHT = 70; 
 
 const styles = StyleSheet.create({
-  fullScreenContainer: {
+  // --- Arka plan containerlar---
+  mainContainer: {
     flex: 1,
+    backgroundColor: '#09090B', // Figma: Dark-1000
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   safeArea: {
     flex: 1,
   },
+  // -------------------------------------
+
   headerBox: {
     height: 60,
-    paddingVertical: 12, // Figma: padding: 12px 0
+    paddingVertical: 12, 
     alignItems: 'center',
     backgroundColor: 'transparent', 
     flexDirection: 'row', 
-    justifyContent: 'center', // Başlık metnini ortalamak için 'center'
+    justifyContent: 'center', 
     position: 'relative', 
     paddingHorizontal: 24,
   },
@@ -424,7 +443,7 @@ const styles = StyleSheet.create({
   historyButton: {
       position: 'absolute',
       right: 24,
-      top: 50,
+      top: 15,
       padding: 5,
   },
   historyIcon: {
@@ -439,7 +458,7 @@ const styles = StyleSheet.create({
   },
   fixedStatusContainer: {
     position: 'absolute',
-    top: 75, 
+    top: 75,
     zIndex: 10,
     width: '100%',
     paddingHorizontal: 24, 

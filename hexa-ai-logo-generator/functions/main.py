@@ -17,42 +17,38 @@ initialize_app(options={
     'storageBucket': 'hexaai-63ae8.firebasestorage.app'
 })
 
-# --- YENİ EKLENEN FONKSİYON: SURPRISE ME (Prompt Üretici) ---
+# --- SURPRISE ME (Prompt Üretici) ---
 @https_fn.on_call(memory=options.MemoryOption.MB_256)
 def generate_creative_prompt(req: https_fn.CallableRequest):
     """
     Frontend'den çağrılır, Groq kullanarak yaratıcı bir logo promptu döner.
     """
     try:
+        request_data = req.data if req.data else {}
+        style = request_data.get("style", "highly detailed")
         client = groq.Groq(api_key=GROQ_API_KEY)
-        
-        # Kullanıcıdan gelen bir stil varsa onu da hesaba katabiliriz (isteğe bağlı)
-        # style = req.data.get("style", "Abstract") 
-        
+    
+        # 1. Kullanıcıdan gelen stili al, yoksa "highly detailed" gibi genel bir ifade kullan
+        style = req.data.get("style", "highly detailed") # Varsayılan olarak genel bir tanım       
+        # 2. Sistem talimatını dinamikleştir
         system_instruction = (
-            "Maximum 30 words. 1 sentence. Create a detailed, creative logo concept description. "
-            "Focus on visual elements, colors, and mood. Do not include introductory text like 'Here is a logo'."
-        )
-
+            f"Create a detailed, creative logo concept description in the **{style} style**. " # Stil buraya eklendi
+            "Maximum 30 words. 1 sentence. Focus on visual elements, colors, and mood. "
+            "Do not include introductory text like 'Here is a logo'."
+        )      
         chat = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": system_instruction}]
-        )
-
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": system_instruction}]
+        )      
+        # ... (Geri kalan kod aynı)
         generated_text = chat.choices[0].message.content
-        
-        # Tırnak işaretlerini temizleyelim
         clean_prompt = generated_text.replace('"', '').strip()
-
-        return {"prompt": clean_prompt}
-
+        return {"prompt": clean_prompt}    
     except Exception as e:
-        print(f"Groq Error: {e}")
-        # Hata olursa default bir prompt dönelim ki uygulama çökmesin
+        # ... (Hata yönetimi aynı) ...
         return {"prompt": "A futuristic geometric hexagon logo with neon blue glowing edges."}
 
-
-# --- MEVCUT FONKSİYON: RESİM ÜRETİCİ (Aynı kalıyor) ---
+# --- IMAGE GENERATOR AI ---
 def query_pollinations(prompt, width=512, height=512, seed=None, nologo=True):
     # ... (Buradaki kodların aynen kalacak) ...
     prompt_encoded = requests.utils.quote(prompt, safe="")

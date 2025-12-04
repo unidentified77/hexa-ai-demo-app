@@ -139,7 +139,9 @@ export const styles = StyleSheet.create({
     },
     jobInfo: {
         fontSize: 10,
-        color: '#71717a',
-        marginTop: 20,
+        color: 'rgba(255, 255, 255, 0.2)', // Çok silik, hayalet gibi görünür
+        marginTop: 30,
+        textAlign: 'center', // Ortalar
+        fontFamily: 'Manrope-Regular',
     }
 });

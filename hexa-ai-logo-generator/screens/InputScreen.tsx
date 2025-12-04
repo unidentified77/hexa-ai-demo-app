@@ -415,33 +415,33 @@ const InputScreen: React.FC = () => {
     const handleStyleSelect = (id: string) => setSelectedStyleId(id);
     const handleViewHistory = () => navigation.navigate('History');
     const handleSurpriseMe = async () => {
-      // Eğer zaten üretim yapıyorsa tekrar basamasın
-      if (isGeneratingPrompt) return;
-  
-      try {
-          setIsGeneratingPrompt(true); // Yükleniyor başlat
-          setPrompt(""); // Kutuyu temizle (opsiyonel)
-  
-          // Backend'deki fonksiyona bağlanıyoruz
-          // 'generate_creative_prompt' ismi main.py'daki fonksiyon adıyla AYNI olmalı
-          const generatePromptFn = httpsCallable(functions, 'generate_creative_prompt');
-  
-          // Fonksiyonu çağır ve cevabı bekle
-          const result = await generatePromptFn(); 
-          
-          // Gelen veriyi al
-          const data = result.data as { prompt: string };
-          
-          // Text inputa yaz
-          setPrompt(data.prompt);
-  
-      } catch (error) {
-          console.error("Surprise Me Error:", error);
-          setPrompt("A minimalist eagle logo with golden ratio circles."); // Hata olursa yedek prompt
-      } finally {
-          setIsGeneratingPrompt(false); // Yükleniyor bitir
-      }
-  };
+        if (isGeneratingPrompt) return;
+    
+        try {
+            setIsGeneratingPrompt(true);
+            setPrompt(""); 
+    
+            const generatePromptFn = httpsCallable(functions, 'generate_creative_prompt');
+    
+            // --- DÜZELTME BURADA ---
+            // Seçili stili (selectedStyleId) ismini bulup gönderiyoruz.
+            // Eğer 'none' ise backend zaten varsayılanı kullanır.
+            const styleName = LOGO_STYLES.find(s => s.id === selectedStyleId)?.name || "Abstract";
+    
+            // Fonksiyonu ÇAĞIRIRKEN veri gönderiyoruz:
+            const result = await generatePromptFn({ style: styleName }); 
+            // -----------------------
+    
+            const data = result.data as { prompt: string };
+            setPrompt(data.prompt);
+    
+        } catch (error) {
+            console.error("Surprise Me Error:", error);
+            setPrompt("A minimalist eagle logo with golden ratio circles."); 
+        } finally {
+            setIsGeneratingPrompt(false); 
+        }
+    };
     
     const isStatusActive = jobStatus !== 'idle';
     const showStatusDisplay = isStatusActive && currentJobId; 

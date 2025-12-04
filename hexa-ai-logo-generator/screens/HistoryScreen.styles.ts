@@ -15,6 +15,7 @@ export const styles = StyleSheet.create({
       paddingBottom: 20,
     },
     title: {
+      fontFamily:'Manrope-Extrabold',
       fontSize: 20,
       fontWeight: '800',
       color: '#fafafa',

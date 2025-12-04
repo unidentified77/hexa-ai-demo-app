@@ -7,9 +7,9 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, RouteProp, useRoute, NavigationProp } from '@react-navigation/native';
 import { styles } from './OutputScreen.styles';
 import Svg, { Path } from 'react-native-svg';
@@ -18,8 +18,10 @@ import Svg, { Path } from 'react-native-svg';
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore'; 
 
-import { app, db, auth, appId } from '../utils/firebase'; // <-- Yeni modülden import
+import { app, db, auth, appId } from '../utils/firebase'; 
 // --- FIREBASE IMPORTS ---
+
+const bgImage = require('../assets/images/back_gradient.png'); 
 
 // TypeScript için navigasyon tipleri
 type RootStackParamList = {
@@ -115,8 +117,9 @@ const OutputScreen: React.FC = () => {
   const isFailed = jobData.status === 'failed';
 
   return (
-    <LinearGradient
-      colors={['#1a1936', '#0e0e1b']} 
+    <ImageBackground // <-- LinearGradient yerine ImageBackground kullanıldı
+      source={bgImage} 
+      resizeMode="cover"
       style={styles.fullScreenContainer}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -176,8 +179,7 @@ const OutputScreen: React.FC = () => {
 
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
-  );
+    </ImageBackground>  );
 };
 
 

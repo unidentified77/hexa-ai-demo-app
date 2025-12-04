@@ -17,5 +17,8 @@ export default {
           measurementId: "G-VF5CH4JWYP",
         })
       }
-    }
+    },
+    plugins: [ 
+        "expo-asset"
+    ]
   };

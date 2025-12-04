@@ -262,10 +262,6 @@ const InputScreen: React.FC = () => {
 
     const [jobUnsubscribe, setJobUnsubscribe] = useState<(() => void) | null>(null);
 
-    const [fontsLoaded] = useFonts({
-        'Manrope-ExtraBold': require('../assets/fonts/Manrope-ExtraBold.ttf'),
-        'Manrope-Regular': require('../assets/fonts/Manrope-Regular.ttf'),
-    });
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -420,12 +416,12 @@ const InputScreen: React.FC = () => {
     const isStatusActive = jobStatus !== 'idle';
     const showStatusDisplay = isStatusActive && currentJobId; 
 
-    if (!fontsLoaded || !isAuthReady) {
+    if (!isAuthReady) {
         return (
             <View style={[styles.mainContainer, {justifyContent: 'center', alignItems: 'center'}]}>
                 <ActivityIndicator size="large" color="#943dff" />
                 <Text style={{color: '#fafafa', marginTop: 10}}>
-                    {!fontsLoaded ? "Loading fonts..." : "Authenticating..."}
+                    {"Authenticating..."}
                 </Text>
             </View>
         );

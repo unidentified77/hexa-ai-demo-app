@@ -1,14 +1,20 @@
 import { StyleSheet } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
+export const PADDING_HORIZONTAL = 24;
+
+export const COLORS = {
+        DARK_1000: '#09090B', // InputScreen'den alınmıştır.
+        DARK_900: '#1C1C1E',
+        DARK_500: '#71717A',
+        WHITE: '#FAFAFA',
+        PRIMARY_PURPLE: '#943dff',
+        BORDER: '#A1A1AA',
+    };
 
 export const styles = StyleSheet.create({
-    fullScreenContainer: {
-        flex: 1,
-    },
-    safeArea: {
-        flex: 1,
-    },
+    fullScreenContainer: { flex: 1, backgroundColor: COLORS.DARK_1000 },
+    backgroundImage: { flex: 1, width: '100%', height: '100%' },
+    safeArea: { flex: 1 },
     headerBar: {
         paddingHorizontal: 24,
         paddingTop: 10,
@@ -79,8 +85,8 @@ export const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: '700',
         color: '#fafafa',
-        height:20
-      },
+        height: 20
+    },
     copyButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -98,29 +104,29 @@ export const styles = StyleSheet.create({
         marginBottom: 12,
         fontWeight: '400',
         fontFamily: 'Manrope-Regular',
-        height:21
-      },
-      styleChip: {
+        height: 21
+    },
+    styleChip: {
         paddingVertical: 4,
         paddingHorizontal: 8,
         justifyContent: 'center',
         alignItems: 'center',
-        flexDirection: 'row', 
-        gap: 10, 
+        flexDirection: 'row',
+        gap: 10,
         borderRadius: 50,
         backgroundColor: 'rgba(250, 250, 250, 0.10)',
-        alignSelf:'flex-start',
+        alignSelf: 'flex-start',
     },
-      styleChipText: {
+    styleChipText: {
         fontSize: 12,
         color: '#fafafa',
         fontWeight: '400',
         fontFamily: 'Manrope-Regular',
-        height:16
-      },
-      jobInfo: {
-          fontSize: 10,
-          color: '#71717a',
-          marginTop: 20,
-      }
-    });
+        height: 16
+    },
+    jobInfo: {
+        fontSize: 10,
+        color: '#71717a',
+        marginTop: 20,
+    }
+});

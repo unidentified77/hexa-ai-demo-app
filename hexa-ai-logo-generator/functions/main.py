@@ -1,69 +1,115 @@
 from firebase_functions import firestore_fn, options
-from firebase_admin import initialize_app, firestore
-import time
+from firebase_admin import initialize_app, firestore, storage
+import requests
+import io
+from PIL import Image
 import random
 
-initialize_app()
+# --- AYARLAR ---
+POLLINATIONS_BASE = "https://image.pollinations.ai/prompt"
 
-# Mock logo URL'leri
-MOCK_LOGO_URLS = [
-    "https://placehold.co/400x400/FFFFFF/000000?text=Logo+A+Result",
-    "https://placehold.co/400x400/FFFFFF/000000?text=Logo+B+Result",
-    "https://placehold.co/400x400/FFFFFF/000000?text=Logo+C+Result",
-]
+# Firebase Başlatma
+initialize_app(options={
+    'storageBucket': 'hexaai-63ae8.firebasestorage.app'
+})
+
+def query_pollinations(prompt, width=512, height=512, seed=None, nologo=True):
+    """
+    Pollinations API'ye istek atıp image bytes döndürür.
+    """
+    prompt_encoded = requests.utils.quote(prompt, safe="")
+    url = f"{POLLINATIONS_BASE}/{prompt_encoded}?width={width}&height={height}"
+
+    if seed is not None:
+        url += f"&seed={seed}"
+    if nologo:
+        url += "&nologo=true"
+
+    print(f"📸 Pollinations API request -> {url}")
+
+    resp = requests.get(url)
+    if resp.status_code == 200:
+        return resp.content
+    else:
+        raise Exception(f"Pollinations API Error {resp.status_code}: {resp.text}")
+
 
 @firestore_fn.on_document_created(
-    document="artifacts/{appId}/users/{userId}/jobs/{jobId}",
+    document="artifacts/default-hexa-app/users/{userId}/jobs/{jobId}",
     timeout_sec=300,
-    memory=options.MemoryOption.MB_512
+    memory=options.MemoryOption.GB_1
 )
 def process_generation_job(event: firestore_fn.Event[firestore_fn.DocumentSnapshot]) -> None:
-    """
-    Firestore'da yeni bir job oluşturulduğunda tetiklenir.
-    """
     snapshot = event.data
     if not snapshot:
-        print("No data associated with the event")
         return
 
-    # Firestore client
-    db = firestore.client()
+    data = snapshot.to_dict()
+    prompt = data.get("prompt")
+    style = data.get("style")
 
+    user_id = event.params["userId"]
     job_id = event.params["jobId"]
-    
     job_ref = snapshot.reference
 
-    print(f"--- Job {job_id} processing started (Firebase SDK v2) ---")
+    # Prompt kontrol
+    if not prompt or prompt.strip() == "":
+        if style and style != "No Style":
+            prompt = f"{style} Logo"
+            print(f"⚠️ Prompt boş — style kullanıldı -> {prompt}")
+        else:
+            print("❌ Prompt eksik!")
+            job_ref.update({"status": "failed", "error_message": "Prompt missing"})
+            return
 
-    # 1. Gecikme (Mock AI)
-    delay_seconds = random.randint(2, 4)
-    print(f"Simulating AI processing for {delay_seconds} seconds...")
-    time.sleep(delay_seconds)
+    try:
+        # --- 1. Pollinations ile çizim ---
+        image_bytes = query_pollinations(prompt)
 
-    # 2. Mock Sonuç
-    is_success = random.random() < 0.5
-    
-    update_data = {}
-    if is_success:
-        mock_logo_url = random.choice(MOCK_LOGO_URLS)
-        update_data = {
+        try:
+            image = Image.open(io.BytesIO(image_bytes))
+        except Exception:
+            # Pollinations bazen JSON dökebilir
+            error_text = image_bytes.decode("utf-8") if image_bytes else "Empty response"
+            print(f"⚠️ Pollinations Response Error: {error_text}")
+            raise Exception(f"Invalid image data: {error_text[:100]}")
+
+        # --- 2. Firebase Storage'a yükle ---
+        bucket = storage.bucket()
+        blob_path = f"generated_logos/{user_id}/{job_id}.png"
+        blob = bucket.blob(blob_path)
+
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format='PNG')
+        blob.upload_from_string(img_byte_arr.getvalue(), content_type="image/png")
+
+        blob.make_public()
+        image_url = blob.public_url
+
+        # 🔥 --- 3. RANDOM %40 FAIL TESTİ --- 🔥
+        if random.random() < 0.40:
+            print("🎯 RANDOM FAIL tetiklendi (%40 ihtimal)")
+            job_ref.update({
+                "status": "failed",
+                "completedAt": firestore.SERVER_TIMESTAMP,
+                "error_message": "Randomized failure test"
+            })
+            return
+
+        # --- 4. Firestore Güncelle ---
+        job_ref.update({
             "status": "done",
-            "logoUrl": mock_logo_url,
+            "logoUrl": image_url,
             "completedAt": firestore.SERVER_TIMESTAMP,
-            "result_message": "Generation successful via Firebase SDK v2."
-        }
-        print(f"Job {job_id} COMPLETED.")
-    else:
-        update_data = {
+            "result_message": "Generated via Pollinations"
+        })
+
+        print(f"✅ Job {job_id} tamamlandı!")
+
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        job_ref.update({
             "status": "failed",
             "completedAt": firestore.SERVER_TIMESTAMP,
-            "error_message": "Mock AI failed."
-        }
-        print(f"Job {job_id} FAILED.")
-
-    # 3. Güncelleme
-    try:
-        job_ref.set(update_data, merge=True)
-        print(f"Firestore document {job_id} updated.")
-    except Exception as e:
-        print(f"Error updating document {job_id}: {e}")
+            "error_message": str(e)
+        })

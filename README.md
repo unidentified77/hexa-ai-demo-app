@@ -10,6 +10,13 @@ This repository contains a demo mobile application that simulates an AI-powered 
 > * **Event-Driven Architecture:** Utilizing Firestore real-time listeners (`onSnapshot`) ensures a reactive UI that responds instantly to backend state changes, rather than simple HTTP polling.
 > * **Full UX Lifecycle (History & Share):** Unlike typical demos that reset after use, this app includes a **History** system to track past creations and native **Share/Save** functionality to distribute results.
 
+## 🎥 Application Demo (Walkthrough)
+
+This video demonstrates the full **Real-Time Generation Workflow**, from prompt creation to final image rendering using the AI backend.
+
+> [**▶️ Watch Video Demo**](hexa-ai-logo-generator/assets/images/demo.mp4)
+
+
 ### 🔐 Security & Automated Integration Testing
 
 To maintain security best practices while ensuring external services are active, the following strategy was implemented:
@@ -89,6 +96,8 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+firebase use hexaai-63ae8
 
 # Deploy functions
 firebase deploy --only functions

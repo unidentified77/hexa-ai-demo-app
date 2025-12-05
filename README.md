@@ -74,6 +74,7 @@ The app follows an event-driven architecture, strictly separating frontend conce
 * Python 3.11+
 * Firebase CLI
 * Expo Go app (for testing on device)
+* Git
 
 ### 1. Frontend Setup
 ```bash
@@ -147,6 +148,11 @@ Use arrow keys to select "Create a new project" (or choose an existing one you o
 ```bash
 firebase use --add
 ```
+> 💡 **Post-Setup Requirement:**
+> After creating a new project, please ensure the following are enabled in the [Firebase Console](https://console.firebase.google.com/):
+> 1.  **Authentication:** Enable **Anonymous** sign-in provider.
+> 2.  **Firestore Database:** Create database (Start in **Test Mode**).
+> 3.  **Storage:** Get started (Start in **Test Mode**).
 
 Deploy: Once your project is linked, deploy the functions:
 

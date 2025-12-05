@@ -6,7 +6,7 @@ This repository contains a demo mobile application that simulates an AI-powered 
 >
 > This project goes beyond the basic assignment requirements by implementing production-grade practices:
 > * **Real AI Integration:** Instead of static mock data, it integrates **Groq (Llama 3)** and **Pollinations.ai** to generate unique, creative prompts and actual images.
-> * **CI/CD Pipeline:** A **GitHub Actions** workflow is established to enforce code quality (Linting, TypeScript checks) and verify builds on every push.
+> * **CI/CD Pipeline:** A **GitHub Actions** workflow is established to enforce code quality (Linting, TypeScript checks,AI API checks) and verify builds on every push.
 > * **Event-Driven Architecture:** Utilizing Firestore real-time listeners (`onSnapshot`) ensures a reactive UI that responds instantly to backend state changes, rather than simple HTTP polling.
 > * **Full UX Lifecycle (History & Share):** Unlike typical demos that reset after use, this app includes a **History** system to track past creations and native **Share/Save** functionality to distribute results.
 
@@ -100,18 +100,20 @@ pip install -r requirements.txt
 firebase deploy --only functions
 ```
 
-## ⚙️ CI/CD & Quality Assurance
+## ⚙️ CI/CD & Automated Testing Pipeline
 
-To ensure code integrity and prevent broken deployments, a **GitHub Actions** CI pipeline has been established.
+To ensure code integrity and prevent broken deployments, a comprehensive **GitHub Actions** pipeline has been established. This pipeline runs on every push to the `main` branch.
 
-* **Automated Builds:** Every push to the `main` branch triggers a clean build in a virtual environment.
-* **Type Safety:** TypeScript compiler checks are run automatically to catch type-related errors early.
-* **Linting:** Code style and standards are enforced before merging.
-
-This pipeline ensures that no broken code reaches the production or main branch.
+### Pipeline Stages:
+1.  **Frontend Quality:**
+    * **Linting:** Enforces strict code style rules.
+    * **Type Checking:** Runs `tsc` to catch TypeScript errors early.
+2.  **Backend Integration Tests (Python):**
+    * **AI Service Health Checks:** Executes isolated Python scripts (`test_groq_ai.py`, `test_pollinations_ai.py`) to verify that external AI APIs (Groq & Pollinations) are responsive.
+    * **Secrets Management:** Uses **GitHub Secrets** to inject API keys securely during testing, ensuring no sensitive keys are exposed in the build logs.
 
 ![CI/CD Workflow Success](hexa-ai-logo-generator/assets/images/ci_success.png)
-*Figure: GitHub Actions workflow successfully passing build, lint, and type checks.*
+*Figure: Successful execution of both Frontend (Lint/Type) and Backend (API Integration) workflows.*
 
 ## 📝 Trade-offs & Assumptions
 

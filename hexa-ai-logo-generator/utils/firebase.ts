@@ -1,49 +1,47 @@
-import { initializeApp, FirebaseApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
-import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import { initializeAuth, getReactNativePersistence, getAuth, Auth } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 
-// --- GLOBAL FIREBASE ORTAM DEĞİŞKENLERİ ---
-// App ID'si
+declare const __app_id: string | undefined;
+declare const __initial_auth_token: string | undefined;
+
+// --- GLOBAL DEĞİŞKENLER ---
 export const appId: string = typeof __app_id !== 'undefined' ? __app_id : 'default-hexa-app'; 
 
-// Firebase Yapılandırmasını içeren ham string
 const rawFirebaseConfig: string =
     Constants.expoConfig?.extra?.firebase_config ?? '{}';
 
-// Auth için özel token
-export const initialAuthToken: string = typeof __initial_auth_token !== 'undefined' ? __initialAuthToken : '';
-// --- GLOBAL FIREBASE ORTAM DEĞİŞKENLERİ SONU ---
+export const initialAuthToken: string = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
 
-
-// --- GERÇEK FIREBASE YAPILANDIRMASI ---
+// --- CONFIG PARSING ---
 let firebaseConfig: any = {};
 try {
     firebaseConfig = JSON.parse(rawFirebaseConfig);
 } catch (e) {
-    console.error("Firebase config parsing failed, using hardcoded fallback:", e);
+    console.error("Firebase config parsing failed:", e);
 }
 
-if (!firebaseConfig.projectId) {
-    console.warn("Using hardcoded fallback Firebase config for hexaai-63ae8.");
+// --- APP INIT (Singleton Pattern) ---
+let app: FirebaseApp;
+let auth: Auth;
+
+if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
     
-    firebaseConfig = {
-        apiKey: "AIzaSyBDDwoYOhZNjV9x47tWmuOBgTd0t5seeag",
-        authDomain: "hexaai-63ae8.firebaseapp.com",
-        projectId: "hexaai-63ae8",
-        storageBucket: "hexaai-63ae8.firebasestorage.app",
-        messagingSenderId: "427522068380",
-        appId: "1:427522068380:web:1f9dd9734b2a65bf02c259",
-        measurementId: "G-VF5CH4JWYP"
-    };
+    try {
+        auth = initializeAuth(app, {
+            persistence: getReactNativePersistence(AsyncStorage)
+        });
+    } catch (e) {
+        auth = getAuth(app);
+    }
+} else {
+    app = getApp();
+    auth = getAuth(app);
 }
-// --- GERÇEK FIREBASE YAPILANDIRMASI SONU ---
 
+const db: Firestore = getFirestore(app);
 
-// Firebase Uygulamasını ve Servislerini Başlatma (Single Instance)
-export const app: FirebaseApp = initializeApp(firebaseConfig);
-export const db: Firestore = getFirestore(app);
-export const auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
-  });
+export { app, db, auth };

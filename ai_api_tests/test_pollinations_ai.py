@@ -17,16 +17,16 @@ Usage:
 
 
 import requests
+import sys
 
 def generate_image(prompt, out_path="test_output.jpg"):
     prompt_encoded = prompt.replace(" ", "_")
     url = f"https://pollinations.ai/p/{prompt_encoded}"
     
     try:
-        resp = requests.get(url, timeout=30) # Timeout ekledik, sonsuza kadar beklemesin
+        resp = requests.get(url, timeout=30)
         
         if resp.status_code == 200:
-            # Dosyayı kaydetmeye gerek yok, sadece veri geldi mi kontrol etsek yeter CI için
             if len(resp.content) > 0:
                 print(f"✅ Pollinations API Success: Received {len(resp.content)} bytes.")
             else:

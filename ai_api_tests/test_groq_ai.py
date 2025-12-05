@@ -18,13 +18,15 @@ Usage:
 
 
 import groq
+import os
+import sys
 
+DEFAULT_KEY = "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"
 api_key = os.environ.get("GROQ_API_KEY", DEFAULT_KEY)
 
 
 if not api_key:
     print("❌ Error: GROQ_API_KEY is missing in environment variables.")
-    # CI pipeline'ı durdurmak için 1 (hata) koduyla çıkış yapıyoruz
     sys.exit(1)
 
 try:
@@ -40,4 +42,4 @@ try:
 
 except Exception as e:
     print(f"❌ Groq API Failed: {e}")
-    sys.exit(1) # Hata olursa CI kızarsın
+    sys.exit(1)

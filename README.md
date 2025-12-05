@@ -80,7 +80,7 @@ The app follows an event-driven architecture, strictly separating frontend conce
 # Clone the repository
 git clone <repository-url>
 cd <repository-folder>
-
+cd hexa-ai-logo-generator
 # Install dependencies
 npm install
 # Start the app

@@ -30,3 +30,34 @@ jobs:
 
       - name: TypeScript Check
         run: npx tsc --noEmit
+
+backend-check:
+    name: Backend Logic & API Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          cd ai_api_tests
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Groq Integration Test
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          cd ai_api_tests
+          # Script hata verirse CI fail olsun istiyoruz
+          python test_groq.py
+
+      - name: Run Pollinations Integration Test
+        run: |
+          cd functions
+          python test_pollinations.py

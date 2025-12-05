@@ -18,18 +18,27 @@ Usage:
 
 import requests
 
-def generate_image(prompt, out_path="output.jpg"):
-    # prompt içerisindeki boşlukları URL-safe hâle getir
+def generate_image(prompt, out_path="test_output.jpg"):
     prompt_encoded = prompt.replace(" ", "_")
     url = f"https://pollinations.ai/p/{prompt_encoded}"
-    resp = requests.get(url)
-    if resp.status_code == 200:
-        with open(out_path, "wb") as f:
-            f.write(resp.content)
-        print("Image downloaded to", out_path)
-    else:
-        print("Error:", resp.status_code, resp.text)
+    
+    try:
+        resp = requests.get(url, timeout=30) # Timeout ekledik, sonsuza kadar beklemesin
+        
+        if resp.status_code == 200:
+            # Dosyayı kaydetmeye gerek yok, sadece veri geldi mi kontrol etsek yeter CI için
+            if len(resp.content) > 0:
+                print(f"✅ Pollinations API Success: Received {len(resp.content)} bytes.")
+            else:
+                print("❌ Pollinations API Error: Received empty response.")
+                sys.exit(1)
+        else:
+            print(f"❌ Pollinations API Error: Status {resp.status_code}")
+            sys.exit(1)
+            
+    except Exception as e:
+        print(f"❌ Pollinations Connection Failed: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    prompt = "a beautiful landscape with mountains and rivers at sunset"
-    generate_image(prompt, "landscape.jpg")
+    generate_image("a futuristic logo test")

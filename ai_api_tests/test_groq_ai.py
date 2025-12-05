@@ -19,11 +19,25 @@ Usage:
 
 import groq
 
-client = groq.Groq(api_key="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")
+api_key = os.environ.get("GROQ_API_KEY", DEFAULT_KEY)
 
-chat = client.chat.completions.create(
-    model="llama-3.3-70b-versatile",
-    messages=[{"role": "user", "content": "Maximum 500 words, 1 sentence, Create a detailed logo concept that evokes a Monogram, Abstract, Mascot, Minimal or Vintage style; clean-lined, creative, vector-style, high-contrast logo with a strong symbolic focus."}]
-)
 
-print(chat.choices[0].message.content)
+if not api_key:
+    print("❌ Error: GROQ_API_KEY is missing in environment variables.")
+    # CI pipeline'ı durdurmak için 1 (hata) koduyla çıkış yapıyoruz
+    sys.exit(1)
+
+try:
+    client = groq.Groq(api_key="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")
+
+    chat = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": "Test prompt: Say 'Hello World' in 3 words."}]
+    )
+    
+    response = chat.choices[0].message.content
+    print("✅ Groq API Success:", response)
+
+except Exception as e:
+    print(f"❌ Groq API Failed: {e}")
+    sys.exit(1) # Hata olursa CI kızarsın

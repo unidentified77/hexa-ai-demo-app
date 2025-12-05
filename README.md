@@ -9,6 +9,18 @@ This repository contains a demo mobile application that simulates an AI-powered 
 > * **CI/CD Pipeline:** A **GitHub Actions** workflow is established to enforce code quality (Linting, TypeScript checks) and verify builds on every push.
 > * **Event-Driven Architecture:** Utilizing Firestore real-time listeners (`onSnapshot`) ensures a reactive UI that responds instantly to backend state changes, rather than simple HTTP polling.
 > * **Full UX Lifecycle (History & Share):** Unlike typical demos that reset after use, this app includes a **History** system to track past creations and native **Share/Save** functionality to distribute results.
+
+### 🔐 Security & Automated Integration Testing
+
+To maintain security best practices while ensuring external services are active, the following strategy was implemented:
+
+* **Secrets Management:** Sensitive API Keys (e.g., `GROQ_API_KEY`) injected dynamically via **GitHub Actions Secrets** during the CI process.
+* **Integration Tests:** Python scripts (`test_groq.py`, `test_pollinations.py`) are executed in the CI pipeline to verify connectivity with 3rd party AI APIs.
+* **Fail-Fast Mechanism:** These scripts use `sys.exit(1)` upon failure, causing the CI pipeline to halt immediately if the AI services are unresponsive or if authentication fails.
+
+This ensures that the deployed code always has valid access to necessary AI services without exposing credentials in the repository.
+
+
 ## 📱 Features
 
 * **Real-time Generation Workflow:** Handles `Idle` -> `Processing` -> `Done/Failed` states using Firestore listeners.

@@ -88,30 +88,69 @@ npx expo start
 ```
 
 ### 2. Backend Setup (Cloud Functions)
-⚠️ **Important:** You need to configure the API Key for the backend to work.
 
-**Get a Free API Key:** Sign up at [Groq Console](https://console.groq.com/) and login, then navigate to API Keys from top-right side and create a key.
+⚠️ **Important:** You must configure the API Key and select your own Firebase project for the backend to work.
 
-2.  **Configure Environment:** Go to `hexa-ai-demo-app\hexa-ai-logo-generator\functions\.env` and add your key:
-```bash
-GROQ_API_KEY=gsk_your_key_here
-```
+#### Step 1: Configure API Key
+1.  **Get a Free API Key:** Sign up at [Groq Console](https://console.groq.com/), log in, and navigate to "API Keys" to create a new key.
+2.  **Create Environment File:**
+    * Navigate to the `hexa-ai-logo-generator/functions/` folder inside the project.
+    * Add your key inside `.env` file:
+    ```env
+    GROQ_API_KEY=gsk_your_generated_key_here
+    ```
 
-Then continue with:
+#### Step 2: Python Environment Setup
+Open your **Terminal** or **Command Prompt** (or use the VS Code Terminal) and navigate to the `hexa-ai-logo-generator/functions` directory:
 
 ```bash
 cd functions
+```
 
+```bash
+#For Windows
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Activate it
+venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+```
 
-firebase use hexaai-63ae8
+```bash
+#For macOS / Linux:
+# Create virtual environment
+python3 -m venv venv
 
-# Deploy functions
+# Activate it
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+Step 3: Firebase Project Setup & Deploy
+Still in the Terminal (inside the functions folder), connect the code to your own Firebase project.
+
+Login to Firebase: (This opens a browser window to login with your Google account)
+```bash
+firebase login
+```
+Select Your Project:
+
+Run the command below.
+
+Use arrow keys to select "Create a new project" (or choose an existing one you own) and press Enter. Alias suggestion: If asked for an alias, type default.
+
+```bash
+firebase use --add
+```
+
+Deploy: Once your project is linked, deploy the functions:
+
+```bash
 firebase deploy --only functions
 ```
 

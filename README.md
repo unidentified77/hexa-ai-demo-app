@@ -75,12 +75,6 @@ cd <repository-folder>
 
 # Install dependencies
 npm install
-
-# Create a .env file in the root directory for Firebase config
-# API Keys are managed via environment variables for security
-touch .env
-# (Add your EXPO_PUBLIC_FIREBASE_API_KEY, etc.)
-
 # Start the app
 npx expo start
 ```

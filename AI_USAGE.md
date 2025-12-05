@@ -48,6 +48,7 @@ AI was exceptionally good at **boilerplate reduction** and **syntax translation*
 * **The Roadmap:** AI suggested a linear path starting with UI. I had to manually restructure the entire plan to focus on Backend/API integration first due to initial lack of access to design specs.
 * **Async Logic & Listeners:** While AI provided the basic Firestore listener code, it struggled with the specific race conditions and state updates in React Native. I had to manually debug the flow to ensure the "Processing" to "Done" transition was smooth and didn't cause infinite loops.
 * **AI Caused Waste of Time:** While developing the project, I was getting an error saying that a string was placed where a boolean was expected and I could not see it when I looked at the code. I tried to solve it using AI and this caused me to waste a lot of time. Later, when I opened a new project from scratch and moved the codes, it worked.
+* **Firebase Console** I had to examine the incoming jobs using the firebase console and make changes accordingly.
 
 
 ### Anything deliberately done without AI

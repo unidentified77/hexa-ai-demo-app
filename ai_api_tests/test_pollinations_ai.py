@@ -1,3 +1,21 @@
+"""
+TEST SCRIPT: Pollinations.ai API Integration Verification
+-------------------------------------------------------
+Purpose:
+  This script serves as an isolated test to verify the functionality of the 
+  Pollinations.ai image generation API before integrating it into the 
+  Firebase Cloud Functions backend.
+
+What it does:
+  1. Sends a text prompt to the Pollinations API.
+  2. Receives the binary image data (bytes).
+  3. Saves the result locally to ensure data integrity.
+
+Usage:
+  Run this script locally to confirm the API is active and functioning correctly.
+"""
+
+
 import requests
 
 def generate_image(prompt, out_path="output.jpg"):

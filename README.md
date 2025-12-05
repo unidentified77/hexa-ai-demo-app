@@ -2,8 +2,13 @@
 
 This repository contains a demo mobile application that simulates an AI-powered logo generation workflow using **React Native Expo** for the frontend and **Firebase Cloud Functions (Python)** for the backend.
 
-> 🚀 **Beyond Requirements:** Instead of using static mock data, this project integrates **Real AI APIs** (Groq & Pollinations) to generate actual creative prompts and images.
-
+> 🚀 **Beyond Requirements & Nice-to-Haves**
+>
+> This project goes beyond the basic assignment requirements by implementing production-grade practices:
+> * **Real AI Integration:** Instead of static mock data, it integrates **Groq (Llama 3)** and **Pollinations.ai** to generate unique, creative prompts and actual images.
+> * **CI/CD Pipeline:** A **GitHub Actions** workflow is established to enforce code quality (Linting, TypeScript checks) and verify builds on every push.
+> * **Event-Driven Architecture:** Utilizing Firestore real-time listeners (`onSnapshot`) ensures a reactive UI that responds instantly to backend state changes, rather than simple HTTP polling.
+> * **Full UX Lifecycle (History & Share):** Unlike typical demos that reset after use, this app includes a **History** system to track past creations and native **Share/Save** functionality to distribute results.
 ## 📱 Features
 
 * **Real-time Generation Workflow:** Handles `Idle` -> `Processing` -> `Done/Failed` states using Firestore listeners.
@@ -82,6 +87,19 @@ pip install -r requirements.txt
 # Deploy functions
 firebase deploy --only functions
 ```
+
+## ⚙️ CI/CD & Quality Assurance
+
+To ensure code integrity and prevent broken deployments, a **GitHub Actions** CI pipeline has been established.
+
+* **Automated Builds:** Every push to the `main` branch triggers a clean build in a virtual environment.
+* **Type Safety:** TypeScript compiler checks are run automatically to catch type-related errors early.
+* **Linting:** Code style and standards are enforced before merging.
+
+This pipeline ensures that no broken code reaches the production or main branch.
+
+![CI/CD Workflow Success](hexa-ai-logo-generator/assets/images/ci_success.png)
+*Figure: GitHub Actions workflow successfully passing build, lint, and type checks.*
 
 ## 📝 Trade-offs & Assumptions
 

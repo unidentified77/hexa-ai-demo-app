@@ -18,6 +18,8 @@ This video demonstrates the full **Real-Time Generation Workflow**, from prompt 
 
 > ⚠️ **Note:** Since the video file is too large to stream directly on GitHub, please click **View Raw** or **Download** on the file page to watch it.
 
+> ℹ️ **Functionality Note:** Tapping on any previously generated item in the **History** list correctly navigates to the **Output Screen**. (This interaction was inadvertently omitted from the video recording but is fully functional).
+
 ### 🔐 Security & Automated Integration Testing
 
 To maintain security best practices while ensuring external services are active, the following strategy was implemented:

@@ -1,8 +1,17 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
-import { initializeAuth, getReactNativePersistence, getAuth, Auth } from "firebase/auth";
+import { initializeAuth, getAuth, Auth } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
+
+// Use conditional import for getReactNativePersistence to fix the missing module error
+let getReactNativePersistence: any;
+try {
+    // @ts-ignore
+    getReactNativePersistence = require("firebase/auth/react-native").getReactNativePersistence;
+} catch (e) {
+    getReactNativePersistence = undefined;
+}
 
 declare const __app_id: string | undefined;
 declare const __initial_auth_token: string | undefined;

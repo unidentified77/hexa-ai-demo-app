@@ -88,6 +88,17 @@ npx expo start
 ```
 
 ### 2. Backend Setup (Cloud Functions)
+⚠️ **Important:** You need to configure the API Key for the backend to work.
+
+**Get a Free API Key:** Sign up at [Groq Console](https://console.groq.com/) and login than go API Keys from top-right side and create a key.
+
+2.  **Configure Environment:** Go to `hexa-ai-demo-app\hexa-ai-logo-generator\functions\.env` and add your key:
+```bash
+GROQ_API_KEY=gsk_your_key_here
+```
+
+Then continue with:
+
 ```bash
 cd functions
 
@@ -125,8 +136,8 @@ To ensure code integrity and prevent broken deployments, a comprehensive **GitHu
     * **Trade-off:** Writing styles took slightly longer, but it ensured zero dependencies and full control over the specific Figma implementation without extra build configuration.
 * **Auth Strategy:** The app currently uses **Firebase Anonymous Auth**.
     * **Assumption:** For a demo/case study, frictionless entry is prioritized over user registration.
-* **Security vs. Convenience:** I have committed the `.env` files (containing API Keys) to the repository.
-    * **Trade-off:** Normally, secrets are strictly git-ignored to prevent leaks. However, **for this case study submission only**, I intentionally included them to ensure the reviewer can run the app immediately without needing to configure environment variables or generate their own API keys. The keys used are for free-tier accounts with limited quotas.
+* **Security vs. Convenience:** API Keys are **not** hardcoded in the repository.
+    * *Decision:* The `.env` file is included for setup convenience, but you must replace the placeholder with your own valid API Key to run the backend locally. Meanwhile, the **CI/CD pipeline** is fully configured with **GitHub Secrets** to demonstrate secure credential management in a production environment.
 
 ## 🚧 Known Limitations & Future Improvements
 

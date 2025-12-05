@@ -21,16 +21,16 @@ import groq
 import os
 import sys
 
-DEFAULT_KEY = "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"
-api_key = os.environ.get("GROQ_API_KEY", DEFAULT_KEY)
-
+api_key = os.environ.get("GROQ_API_KEY")
 
 if not api_key:
     print("❌ Error: GROQ_API_KEY is missing in environment variables.")
+    print("   -> If running locally: Set the variable in your terminal.")
+    print("   -> If running in CI: Check GitHub Secrets.")
     sys.exit(1)
 
 try:
-    client = groq.Groq(api_key="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")
+    client = groq.Groq(api_key=api_key)
 
     chat = client.chat.completions.create(
         model="llama-3.3-70b-versatile",

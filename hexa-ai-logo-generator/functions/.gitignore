@@ -4,6 +4,3 @@ __pycache__/
 # Python virtual environment
 venv/
 *.local
-
-# Environment variables
-.env

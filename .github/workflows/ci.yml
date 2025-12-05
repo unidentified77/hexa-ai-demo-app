@@ -7,6 +7,7 @@ on:
     branches: [ main, master ]
 
 jobs:
+  # --- 1. FRONTEND JOB ---
   quality:
     name: Lint & Type Check
     runs-on: ubuntu-latest
@@ -31,9 +32,10 @@ jobs:
       - name: TypeScript Check
         run: npx tsc --noEmit
 
-backend-check:
+  backend-check:
     name: Backend Logic & API Checks
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -45,7 +47,7 @@ backend-check:
 
       - name: Install Dependencies
         run: |
-          cd ai_api_tests
+          cd cd ai_api_tests 
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
@@ -53,8 +55,7 @@ backend-check:
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-          cd ai_api_tests
-          # Script hata verirse CI fail olsun istiyoruz
+          cd cd ai_api_tests
           python test_groq.py
 
       - name: Run Pollinations Integration Test

@@ -90,7 +90,7 @@ npx expo start
 ### 2. Backend Setup (Cloud Functions)
 ⚠️ **Important:** You need to configure the API Key for the backend to work.
 
-**Get a Free API Key:** Sign up at [Groq Console](https://console.groq.com/) and login than go API Keys from top-right side and create a key.
+**Get a Free API Key:** Sign up at [Groq Console](https://console.groq.com/) and login, then navigate to API Keys from top-right side and create a key.
 
 2.  **Configure Environment:** Go to `hexa-ai-demo-app\hexa-ai-logo-generator\functions\.env` and add your key:
 ```bash

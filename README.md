@@ -16,6 +16,7 @@ This video demonstrates the full **Real-Time Generation Workflow**, from prompt 
 
 > [**▶️ Watch Video Demo**](hexa-ai-logo-generator/assets/images/demo.mp4)
 
+> ⚠️ **Note:** Since the video file is too large to stream directly on GitHub, please click **View Raw** or **Download** on the file page to watch it.
 
 ### 🔐 Security & Automated Integration Testing
 
